@@ -3,7 +3,7 @@ const fs = require('fs');
 const { Client, GatewayIntentBits, Partials } = require('discord.js');
 const mongoose = require('mongoose');
 
-mongoose.set('debug', true);
+mongoose.set('debug', process.env.DEBUG_MONGOOSE === 'true');
 
 mongoose.connect(process.env.FREEMODE_ARENA_DATABASE_URI)
     .then(() => {

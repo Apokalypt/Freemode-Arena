@@ -6,7 +6,7 @@ const ID = require('../builder/id');
 const { Components } = require('../builder');
 const { UnknownMatch, UnknownInteraction, FreemodeArenaError, UnknownWeaponsClass, InvalidMatchParticipant,
     UnknownWeaponsCategory, UnknownUserPlatform, UserAlreadyWaitingForOpponent, WeaponsSelectionAlreadyValidated,
-    NoPreviousSelectionValidated, UserAlreadyRegistered, NoWeaponSelected
+    NoPreviousSelectionValidated, UserAlreadyRegistered, NoWeaponsSelected
 } = require('../errors');
 const MaxValueForWeaponsReached = require('../errors/MaxValueForWeaponsReached');
 const { Error } = require('mongoose');
@@ -303,6 +303,7 @@ async function handleInteractionButton(client, interaction) {
             // Send a welcome message to add the user to the thread and all the organizers
             const message = await thread.send(messageContent);
             await message.edit(messageContent.replace('organisateurs', `<@&${process.env.FREEMODE_ARENA_ORGANIZERS_ROLE_ID}>`));
+            await message.pin();
 
             await sendInteractionResponse(
                 interaction,
@@ -527,11 +528,11 @@ async function handleInteractionButton(client, interaction) {
                 }
 
                 if (player.weapons.length === 0) {
-                    throw new NoWeaponSelected();
+                    throw new NoWeaponsSelected();
                 }
-                const categoriesName = player.weapons.map( fullName => fullName.split('-')[0].trim() );
-                if (categoriesName.length === 1 && categoriesName[0] === 'Bonus') {
-                    throw new NoWeaponSelected();
+                const categoriesName = new Set(player.weapons.map( fullName => fullName.split('-')[0].trim() ));
+                if (categoriesName.size === 1 && categoriesName.has('Bonus')) {
+                    throw new NoWeaponsSelected();
                 }
 
                 player.selectionDate = new Date();

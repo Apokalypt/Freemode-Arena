@@ -54,7 +54,7 @@ class Message {
         const row = new ActionRowBuilder()
             .addComponents( Components.searchForOpponent() );
 
-        const attachment = new AttachmentBuilder(fs.readFileSync('./assets/freemode_vs.jpg'), { name: 'freemode_vs.jpg'});
+        const attachment = new AttachmentBuilder(fs.readFileSync('./assets/freemode_vs.png'), { name: 'freemode_vs.png'});
 
         return channel.send({
             embeds: [

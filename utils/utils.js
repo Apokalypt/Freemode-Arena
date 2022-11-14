@@ -79,7 +79,7 @@ function stringifyUserSelection(weaponsSelected, final = false) {
     if (userSelection.length === 0) {
         userSelectionString = ' *Aucune arme sélectionnée*';
     } else {
-        userSelectionString = '\n' + userSelection.map( weapon => `${"\u200b ".repeat(5)} :dot: ${weapon.toString()}` ).join('\n')
+        userSelectionString = '\n' + userSelection.map( weapon => `${"\u200b ".repeat(5)} <:dot:1041765493180211271> ${weapon.toString()}` ).join('\n')
     }
 
     const baseWeaponsString = final ? "Armes que vous devrez utiliser" : "Armes actuellement sélectionnées";

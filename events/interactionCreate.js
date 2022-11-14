@@ -506,6 +506,13 @@ async function handleInteractionButton(client, interaction) {
                                     'de la fonctionnalité de votre console.\n' +
                                     'Une fois le match terminé, chacun des joueurs doit envoyer son gameplay. Sans enregistrement, le match sera considéré comme inexistant !'
                                 ),
+                            new EmbedBuilder()
+                                .setTitle(':six: Visée assistée BANNIE')
+                                .setDescription(
+                                    'L\'ensemble des affrontements doit se faire sans visée assistée, c\'est à dire en **visée auto**.\n' +
+                                    'Pour changer/vérifier votre mode de visée, rendez-vous en mode histoire ou éditeur, ouvrez start, paramètres, ' +
+                                    'cliquez sur "Commandes" et assurez-vous que la visée est sur **visée auto**.'
+                                )
                         ]
                     }
                 )
@@ -581,12 +588,12 @@ async function handleInteractionButton(client, interaction) {
                                     {
                                         name: `Armes de ${user1.username}#${user1.discriminator}`,
                                         value: match.players['1'].weapons
-                                            .map( weapon => `${"\u200b ".repeat(3)} :dot: ${weapon.toString()}` ).join('\n')
+                                            .map( weapon => `${"\u200b ".repeat(3)} <:dot:1041765493180211271> ${weapon.toString()}` ).join('\n')
                                     },
                                     {
                                         name: `Armes de ${user2.username}#${user2.discriminator}`,
                                         value: match.players['2'].weapons
-                                            .map( weapon => `${"\u200b ".repeat(3)} :dot: ${weapon.toString()}` ).join('\n')
+                                            .map( weapon => `${"\u200b ".repeat(3)} <:dot:1041765493180211271> ${weapon.toString()}` ).join('\n')
                                     }
                                 )
                                 .setImage(match.map.img)
@@ -621,7 +628,7 @@ async function handleInteractionButton(client, interaction) {
                         ephemeral: true,
                         content: "**Sélectionnez stratégiquement vos armes car vous êtes limité !**\n" +
                             "\n" +
-                            ":info~1: Chaque arme coûte un certain nombre de points. La somme des points des armes sélectionnées ne doit pas dépasser 10 points\n" +
+                            "<:info:1041766236759015454> Chaque arme coûte un certain nombre de points. La somme des points des armes sélectionnées ne doit pas dépasser 10 points\n" +
                             "\n" +
                             stringifyUserSelection(userData.weapons),
                         components: [

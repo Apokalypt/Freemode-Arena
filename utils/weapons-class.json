@@ -15,7 +15,7 @@
         "weapons": [
             "Fusils à pompe - Fusil à pompe d'assaut",
             "Fusils d'assaut - Fusil d'assaut",
-            "Bonus - Casques pare-balles"
+            "Bonus - Casque pare-balles"
         ]
     },
     {
@@ -25,7 +25,7 @@
         "weapons": [
             "Fusils d'assaut - Carabine",
             "Bonus - Compétences de contacts",
-            "Bonus - Compétences de PDG"
+            "Bonus - Compétences de PDG (Securoserv)"
         ]
     },
     {
@@ -44,7 +44,7 @@
         "description": "Classe de longue portée avec un sniper lourd MKII et les compétences de PDG.",
         "weapons": [
             "Fusils de précision - Sniper lourd Mk II",
-            "Bonus - Compétences de PDG"
+            "Bonus - Compétences de PDG (Securoserv)"
         ]
     }
 ]

@@ -29,6 +29,9 @@ class ID {
     static weaponsSelectionValidate(matchId) {
         return `weapons-validate-selection-${matchId}`
     }
+    static weaponsSelectionValidateVerified(matchId) {
+        return `weapons-validate-selection-verified-${matchId}`
+    }
 
     static optionPreviousSelection() {
         return 'weapons-action-menu-previous-selection'

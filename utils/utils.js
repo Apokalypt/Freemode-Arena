@@ -68,6 +68,16 @@ function getWeapons() {
     return weapons;
 }
 
+function validateWeaponsSelection(weaponsSelected) {
+    const weapons = getWeapons();
+
+    const userSelectionValue = weaponsSelected.map( weapon => weapons.find( w => getWeaponId(w) === weapon ) )
+        .filter( weapon => !!weapon )
+        .reduce((acc, weapon) => acc + weapon.value, 0);
+
+    return userSelectionValue >= 0 && userSelectionValue <= exportData.MAX_USER_SELECTION;
+}
+
 function stringifyUserSelection(weaponsSelected, final = false) {
     const weapons = getWeapons();
 
@@ -92,7 +102,7 @@ const exportData = {
     sendInteractionResponse,
     getWeaponId,
     stringifyUserSelection,
-    getWeapons,
+    validateWeaponsSelection,
     get MAX_USER_SELECTION() {
         return parseInt(process.env.FREEMODE_ARENA_WEAPONS_SELECTION_MAX)
     }

@@ -1,5 +1,5 @@
 const { Events, ChannelType, EmbedBuilder, ActionRowBuilder, ComponentType } = require('discord.js');
-const { sendInteractionResponse, stringifyUserSelection } = require('../utils/utils');
+const { sendInteractionResponse, stringifyUserSelection, validateWeaponsSelection } = require('../utils/utils');
 const MatchTicket = require('../db/MatchTicket');
 const Match = require('../db/Match');
 const ID = require('../builder/id');
@@ -518,8 +518,8 @@ async function handleInteractionButton(client, interaction) {
                 )
 
                 break;
-            } else if (interaction.customId.startsWith('weapons-validate-selection-')) {
-                const matchId = interaction.customId.split('-')[3];
+            } else if (interaction.customId.startsWith('weapons-validate-selection-verified-')) {
+                const matchId = interaction.customId.split('-')[4];
                 const match = await Match.findById(matchId).exec();
                 if (!match) {
                     throw new UnknownMatch();
@@ -540,6 +540,10 @@ async function handleInteractionButton(client, interaction) {
                 const categoriesName = new Set(player.weapons.map( fullName => fullName.split('-')[0].trim() ));
                 if (categoriesName.size === 1 && categoriesName.has('Bonus')) {
                     throw new NoWeaponsSelected();
+                }
+
+                if (!validateWeaponsSelection(player.weapons)) {
+                    throw new MaxValueForWeaponsReached();
                 }
 
                 player.selectionDate = new Date();
@@ -608,6 +612,50 @@ async function handleInteractionButton(client, interaction) {
                     });
                     await message.pin();
                 }
+
+                break;
+            } else if (interaction.customId.startsWith('weapons-validate-selection-')) {
+                const matchId = interaction.customId.split('-')[3];
+                const match = await Match.findById(matchId).exec();
+                if (!match) {
+                    throw new UnknownMatch();
+                }
+                if (match.players['1'].id !== interaction.user.id && match.players['2'].id !== interaction.user.id) {
+                    throw new InvalidMatchParticipant();
+                }
+
+                const playerId = match.players['1'].id === interaction.user.id ? '1' : '2';
+                const player = match.players[playerId];
+                if (player.selectionDate != null) {
+                    throw new WeaponsSelectionAlreadyValidated();
+                }
+
+                if (player.weapons.length === 0) {
+                    throw new NoWeaponsSelected();
+                }
+                const categoriesName = new Set(player.weapons.map( fullName => fullName.split('-')[0].trim() ));
+                if (categoriesName.size === 1 && categoriesName.has('Bonus')) {
+                    throw new NoWeaponsSelected();
+                }
+
+                if (!validateWeaponsSelection(player.weapons)) {
+                    throw new MaxValueForWeaponsReached();
+                }
+
+                await sendInteractionResponse(
+                    interaction,
+                    {
+                        ephemeral: true,
+                        content: stringifyUserSelection(player.weapons) + "\n\n" +
+                            "<a:warning:1022529561805721631> **Une fois validée, votre sélection ne pourra plus être modifiée. Vérifiez-là bien !**",
+                        components: [
+                            new ActionRowBuilder()
+                                .addComponents(
+                                    Components.weaponsSelectionValidateVerifiedButton(matchId)
+                                )
+                        ]
+                    }
+                )
 
                 break;
             } else if (interaction.customId.startsWith('weapons-')) {

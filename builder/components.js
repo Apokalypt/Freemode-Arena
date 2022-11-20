@@ -151,6 +151,13 @@ class Components {
             .setStyle(ButtonStyle.Success)
     }
 
+    static weaponsSelectionValidateVerifiedButton(matchId) {
+        return new ButtonBuilder()
+            .setCustomId( ID.weaponsSelectionValidateVerified(matchId) )
+            .setLabel("Je Confirme Cette Sélection")
+            .setStyle(ButtonStyle.Success)
+    }
+
     static matchRulesButton(matchId) {
         return new ButtonBuilder()
             .setCustomId( ID.matchRulesButton(matchId) )

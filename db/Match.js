@@ -1,15 +1,5 @@
 const mongoose = require('mongoose');
-const { getWeapons, getWeaponId, MAX_USER_SELECTION } = require('../utils/utils');
-
-function validateWeaponsSelection(weaponsSelected) {
-    const weapons = getWeapons();
-
-    const userSelection = weaponsSelected.map( weapon => weapons.find( w => getWeaponId(w) === weapon ) )
-        .filter( weapon => !!weapon );
-    const userSelectionValue = userSelection.reduce( (acc, weapon) => acc + weapon.value, 0 );
-
-    return userSelectionValue >= 0 && userSelectionValue <= MAX_USER_SELECTION;
-}
+const { validateWeaponsSelection } = require('../utils/utils');
 
 const MatchSchema = new mongoose.Schema(
     {

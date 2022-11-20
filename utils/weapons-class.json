@@ -13,8 +13,8 @@
         "name": "Mastodonte",
         "description": "Classe de courte/moyenne portée avec un pompe, un fusil d'assaut et les casques pare-balle.",
         "weapons": [
+            "Mitraillettes - Mitraillette",
             "Fusils à pompe - Fusil à pompe d'assaut",
-            "Fusils d'assaut - Fusil d'assaut",
             "Bonus - Casque pare-balles"
         ]
     },

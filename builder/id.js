@@ -12,6 +12,9 @@ class ID {
     }
 
     static weaponsCategorySelectionMenu(matchId) {
+        return `weapons-select-category-menu-${matchId}`
+    }
+    static weaponsFromCategorySelectionMenu(matchId) {
         return `weapons-category-menu-${matchId}`
     }
     static weaponsSelectionMenu(matchId, categoryId) {

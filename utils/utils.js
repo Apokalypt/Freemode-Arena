@@ -1,24 +1,87 @@
+const { ActionRowBuilder } = require('discord.js');
+const { Components } = require('../builder');
+const { getWeaponId } = require('./weapons-utils');
+const Embeds = require('../builder/Embeds');
+
 /**
  *
  * @param {import('discord.js').Interaction} interaction
  * @param {string | import('discord.js').MessagePayload | import('discord.js').InteractionReplyOptions | import('discord.js').WebhookEditMessageOptions} options
+ * @param {boolean} [forceFollowUp=false]   Force the response in a new message. In case that the interaction has been deferred
+ *      or replied a follow-up will be sent instead of editing the original message
  */
-async function sendInteractionResponse(interaction, options) {
+async function sendInteractionResponse(interaction, options, forceFollowUp = false) {
     if (interaction.deferred || interaction.replied) {
-        return interaction.editReply({ ...options, content: options.content || '', components: options.components || [] })
-            .then( res => {
-                interaction.replied = true;
-                return res
+        if (forceFollowUp) {
+            // We edit the reply with the same content to reset all components states
+            await interaction.editReply({
+                content: interaction.message.content ?? '',
+                embeds: interaction.message.embeds ?? [],
+                components: interaction.message.components ?? []
+            }).catch( console.error );
+
+            return interaction.followUp(options);
+        } else {
+            return interaction.editReply({
+                ...options,
+                content: options.content || '',
+                embeds: options.embeds || [],
+                components: options.components || []
             })
-            .catch(console.error);
+                .then( res => {
+                    interaction.replied = true;
+                    return res
+                })
+                .catch( console.error );
+        }
     } else {
         return interaction.reply(options)
             .then( res => {
                 interaction.replied = true;
                 return res
             })
-            .catch(console.error);
+            .catch( console.error );
     }
+}
+
+async function sendMainMenuSelectionResponse(interaction, weaponsSelected, matchId) {
+    return sendInteractionResponse(
+        interaction,
+        {
+            ephemeral: true,
+            content: "**Sélectionnez stratégiquement vos armes car vous êtes limité !**\n" +
+                "\n" +
+                "<:info:1041766236759015454> Chaque arme coûte un certain nombre de points. La somme des points des armes sélectionnées ne doit pas dépasser 10 points\n" +
+                "\n" +
+                stringifyUserSelection(weaponsSelected),
+            components: [
+                new ActionRowBuilder()
+                    .addComponents(
+                        Components.weaponsSelectionUpdateMenu(matchId)
+                    ),
+                new ActionRowBuilder()
+                    .addComponents(
+                        Components.weaponsSelectionValidateButton(matchId)
+                    )
+            ]
+        }
+    )
+}
+
+async function sendWeaponsCategoryMenuSelectionResponse(interaction, matchId) {
+    return sendInteractionResponse(
+        interaction,
+        {
+            ephemeral: true,
+            embeds: [ Embeds.weaponsCategorySelection() ],
+            components: [
+                new ActionRowBuilder()
+                    .addComponents( Components.weaponsCategorySelectionMenu(matchId) ),
+                new ActionRowBuilder()
+                    .addComponents( Components.backMainMenuSelectionButton(matchId) )
+            ]
+        }
+    );
 }
 
 /**
@@ -37,14 +100,6 @@ async function sendInteractionResponse(interaction, options) {
  * @property {string} prefix
  * @property {CommandData[]} commands
  */
-
-/**
- * @param {{ category: string; name: string }} weapon
- * @returns {string}
- */
-function getWeaponId(weapon) {
-    return `${weapon.category} - ${weapon.name}`;
-}
 
 function getWeapons() {
     const categories = require('./weapons');
@@ -100,7 +155,8 @@ function stringifyUserSelection(weaponsSelected, final = false) {
 
 const exportData = {
     sendInteractionResponse,
-    getWeaponId,
+    sendWeaponsCategoryMenuSelectionResponse,
+    sendMainMenuSelectionResponse,
     stringifyUserSelection,
     validateWeaponsSelection,
     get MAX_USER_SELECTION() {

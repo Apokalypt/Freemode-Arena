@@ -1,5 +1,5 @@
-const { Events, ChannelType, EmbedBuilder, ActionRowBuilder, ComponentType } = require('discord.js');
-const { sendInteractionResponse, stringifyUserSelection, validateWeaponsSelection } = require('../utils/utils');
+const { Events, ChannelType, EmbedBuilder, ActionRowBuilder, ComponentType, MessageFlagsBitField } = require('discord.js');
+const { sendInteractionResponse, stringifyUserSelection, validateWeaponsSelection, sendMainMenuSelectionResponse, sendWeaponsCategoryMenuSelectionResponse } = require('../utils/utils');
 const MatchTicket = require('../db/MatchTicket');
 const Match = require('../db/Match');
 const ID = require('../builder/id');
@@ -11,6 +11,7 @@ const { UnknownMatch, UnknownInteraction, FreemodeArenaError, UnknownWeaponsClas
 const MaxValueForWeaponsReached = require('../errors/MaxValueForWeaponsReached');
 const { Error } = require('mongoose');
 const Participant = require('../db/Participant');
+const Embeds = require('../builder/Embeds');
 
 /**
  * @param {import('discord.js').Client} client
@@ -55,7 +56,13 @@ async function handleInteractionSelectMenu(client, interaction) {
                     {
                         ephemeral: true,
                         content: "Votre sélection a été mise à jour et correspond dorénavant à votre dernière sélection validée.\n\n" +
-                            stringifyUserSelection(lastSelection)
+                            stringifyUserSelection(lastSelection),
+                        components: [
+                            new ActionRowBuilder()
+                                .addComponents(
+                                    Components.backMainMenuSelectionButton(matchId)
+                                )
+                        ]
                     }
                 )
                 break;
@@ -86,7 +93,13 @@ async function handleInteractionSelectMenu(client, interaction) {
                     {
                         ephemeral: true,
                         content: "Votre sélection a été mise à jour et correspond dorénavant à votre dernière sélection validée sur la même map.\n\n" +
-                            stringifyUserSelection(lastSelectionSameMap)
+                            stringifyUserSelection(lastSelectionSameMap),
+                        components: [
+                            new ActionRowBuilder()
+                                .addComponents(
+                                    Components.backMainMenuSelectionButton(matchId)
+                                )
+                        ]
                     }
                 )
                 break;
@@ -100,12 +113,16 @@ async function handleInteractionSelectMenu(client, interaction) {
                         embeds: [
                             new EmbedBuilder()
                                 .setTitle('Choisissez votre classe')
-                                .setDescription('En choisissant une classe, vous écrasez votre sélection actuelle. Bien entendu, vous pourrez modifier la sélection de la classe par la suite si vous le souhaitez.')
+                                .setDescription(
+                                    '<a:warning:1022529561805721631> En choisissant une classe, vous écrasez votre sélection actuelle.\n' +
+                                    '<:info:1041766236759015454> Si vous le souhaitez, vous pourrez customiser la sélection en ajoutant/supprimant des armes.')
                                 .setColor('#0099ff')
                         ],
                         components: [
                             new ActionRowBuilder()
-                                .addComponents( Components.weaponsClassSelectionMenu(matchId) )
+                                .addComponents( Components.weaponsClassSelectionMenu(matchId) ),
+                            new ActionRowBuilder()
+                                .addComponents( Components.backMainMenuSelectionButton(matchId) )
                         ]
                     }
                 )
@@ -113,22 +130,8 @@ async function handleInteractionSelectMenu(client, interaction) {
             case ID.optionManualSelection():
                 // Show a menu to select the category of weapons
 
-                await sendInteractionResponse(
-                    interaction,
-                    {
-                        ephemeral: true,
-                        embeds: [
-                            new EmbedBuilder()
-                                .setTitle('Sélectionnez la catégorie de l\'arme que vous souhaitez ajouter/retirer')
-                                .setDescription('En choisissant une catégorie, nous vous présenterons l\'ensemble des armes de cette catégorie. Vous pourrez donc sélectionner/déselctionner les armes pour modifier votre sélection.')
-                                .setColor('#0099ff')
-                        ],
-                        components: [
-                            new ActionRowBuilder()
-                                .addComponents( Components.weaponsCategorySelectionMenu(matchId) )
-                        ]
-                    }
-                );
+                await sendWeaponsCategoryMenuSelectionResponse(interaction, matchId);
+
                 break;
         }
     } else if (interaction.customId.startsWith("weapons-class-menu-")) {
@@ -155,22 +158,7 @@ async function handleInteractionSelectMenu(client, interaction) {
             throw new InvalidMatchParticipant();
         }
 
-        // Show user match selection
-        await sendInteractionResponse(
-            interaction,
-            {
-                ephemeral: true,
-                embeds: [
-                    new EmbedBuilder()
-                        .setTitle('Votre sélection')
-                        .setDescription(
-                            "Voici votre sélection actuelle, vous ne l'avez pas encore validé et pouvez donc la modifier à tout moment.\n\n" +
-                            stringifyUserSelection(classData.weapons)
-                        )
-                        .setColor('#0099ff')
-                ]
-            }
-        )
+        await sendMainMenuSelectionResponse(interaction, classData.weapons, matchId);
     } else if (interaction.customId.startsWith("weapons-category-menu-")) {
         const matchId = interaction.customId.replace("weapons-category-menu-", "");
         const match = await Match.findById(matchId).exec();
@@ -205,6 +193,11 @@ async function handleInteractionSelectMenu(client, interaction) {
                     new ActionRowBuilder()
                         .addComponents(
                             Components.weaponsSelectionMenu(matchId, categoryData, player.weapons)
+                        ),
+                    new ActionRowBuilder()
+                        .addComponents(
+                            Components.backWeaponCategorySelectionButton(matchId),
+                            Components.backMainMenuSelectionButton(matchId)
                         )
                 ]
             });
@@ -232,14 +225,13 @@ async function handleInteractionSelectMenu(client, interaction) {
                     interaction,
                     {
                         ephemeral: true,
-                        embeds: [
-                            new EmbedBuilder()
-                                .setTitle('Votre sélection')
-                                .setDescription(
-                                    "Voici votre sélection actuelle, vous ne l'avez pas encore validé et pouvez donc la modifier à tout moment.\n\n" +
-                                    stringifyUserSelection(player.weapons)
-                                )
-                                .setColor('#0099ff')
+                        content: stringifyUserSelection(player.weapons),
+                        embeds: [ Embeds.weaponsCategorySelection() ],
+                        components: [
+                            new ActionRowBuilder()
+                                .addComponents( Components.weaponsCategorySelectionMenu(matchId) ),
+                            new ActionRowBuilder()
+                                .addComponents( Components.backMainMenuSelectionButton(matchId) )
                         ]
                     }
                 )
@@ -518,6 +510,19 @@ async function handleInteractionButton(client, interaction) {
                 )
 
                 break;
+            } else if (interaction.customId.startsWith('weapons-select-category-menu-')) {
+                const matchId = interaction.customId.split('-')[4];
+                const match = await Match.findById(matchId).exec();
+                if (!match) {
+                    throw new UnknownMatch();
+                }
+                if (match.players['1'].id !== interaction.user.id && match.players['2'].id !== interaction.user.id) {
+                    throw new InvalidMatchParticipant();
+                }
+
+                await sendWeaponsCategoryMenuSelectionResponse(interaction, matchId);
+
+                break;
             } else if (interaction.customId.startsWith('weapons-validate-selection-verified-')) {
                 const matchId = interaction.customId.split('-')[4];
                 const match = await Match.findById(matchId).exec();
@@ -651,6 +656,7 @@ async function handleInteractionButton(client, interaction) {
                         components: [
                             new ActionRowBuilder()
                                 .addComponents(
+                                    Components.weaponsSelectionCancelValidationButton(matchId),
                                     Components.weaponsSelectionValidateVerifiedButton(matchId)
                                 )
                         ]
@@ -670,27 +676,7 @@ async function handleInteractionButton(client, interaction) {
                     throw new WeaponsSelectionAlreadyValidated();
                 }
 
-                await sendInteractionResponse(
-                    interaction,
-                    {
-                        ephemeral: true,
-                        content: "**Sélectionnez stratégiquement vos armes car vous êtes limité !**\n" +
-                            "\n" +
-                            "<:info:1041766236759015454> Chaque arme coûte un certain nombre de points. La somme des points des armes sélectionnées ne doit pas dépasser 10 points\n" +
-                            "\n" +
-                            stringifyUserSelection(userData.weapons),
-                        components: [
-                            new ActionRowBuilder()
-                                .addComponents(
-                                    Components.weaponsSelectionUpdateMenu(matchId)
-                                ),
-                            new ActionRowBuilder()
-                                .addComponents(
-                                    Components.weaponsSelectionValidateButton(matchId)
-                                )
-                        ]
-                    }
-                )
+                await sendMainMenuSelectionResponse(interaction, userData.weapons, matchId);
 
                 break;
             }
@@ -711,8 +697,13 @@ module.exports = {
         if (!interaction.inCachedGuild()) return;
         if (interaction.customId.startsWith('collector-')) return;
 
+        const shouldDeferUpdate = interaction.message.flags.has(MessageFlagsBitField.Flags.Ephemeral)
         try {
-            await interaction.deferReply({ ephemeral: true });
+            if (shouldDeferUpdate) {
+                await interaction.deferUpdate();
+            } else {
+                await interaction.deferReply({ ephemeral: true });
+            }
 
             if (interaction.isButton()) {
                 await handleInteractionButton(client, interaction);
@@ -733,7 +724,8 @@ module.exports = {
 
             await sendInteractionResponse(
                 interaction,
-                { embeds: [ new EmbedBuilder().setDescription(message).setColor('#FF0000') ], ephemeral: true }
+                { embeds: [ new EmbedBuilder().setDescription(message).setColor('#FF0000') ], ephemeral: true },
+                shouldDeferUpdate
             );
         }
     }

@@ -1,6 +1,9 @@
 class ID {
-    static participateToConquest() {
-        return 'participate'
+    static requestToParticipateToConquest() {
+        return 'request-participate'
+    }
+    static confirmParticipationToConquest() {
+        return 'confirm-participate'
     }
 
     static searchForOpponent() {

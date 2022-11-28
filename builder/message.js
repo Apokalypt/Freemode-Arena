@@ -10,7 +10,7 @@ class Message {
     static async sendAnnouncementMessage(channel) {
         const row = new ActionRowBuilder()
             .addComponents(
-                Components.participateToConquest(),
+                Components.requestToParticipateToConquest(),
                 Components.documentFullDetailsButton()
             );
 

@@ -3,10 +3,16 @@ const ID = require('./id');
 const { getWeaponId } = require('../utils/weapons-utils');
 
 class Components {
-    static participateToConquest() {
+    static requestToParticipateToConquest() {
         return new ButtonBuilder()
-            .setCustomId( ID.participateToConquest() )
+            .setCustomId( ID.requestToParticipateToConquest() )
             .setLabel('Je Participe!')
+            .setStyle(ButtonStyle.Primary)
+    }
+    static confirmParticipationButton() {
+        return new ButtonBuilder()
+            .setCustomId( ID.confirmParticipationToConquest() )
+            .setLabel('Oui, Je Souhaite Vraiment m\'Inscrire!')
             .setStyle(ButtonStyle.Primary)
     }
 

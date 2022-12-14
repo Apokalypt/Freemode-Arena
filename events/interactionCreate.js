@@ -12,6 +12,8 @@ const MaxValueForWeaponsReached = require('../errors/MaxValueForWeaponsReached')
 const { Error } = require('mongoose');
 const Participant = require('../db/Participant');
 const Embeds = require('../builder/Embeds');
+const RegistrationClosed = require('../errors/RegistrationClosed');
+const MatchmakingClosed = require('../errors/MatchmakingClosed');
 
 /**
  * @param {import('discord.js').Client} client
@@ -253,6 +255,11 @@ async function handleInteractionSelectMenu(client, interaction) {
 async function handleInteractionButton(client, interaction) {
     switch (interaction.customId) {
         case ID.requestToParticipateToConquest():
+            // If Date is after 12 December 2021 23:59:59
+            if (Date.now() > 1639459199000) {
+                throw new RegistrationClosed();
+            }
+
             await sendInteractionResponse(
                 interaction,
                 {
@@ -334,6 +341,11 @@ async function handleInteractionButton(client, interaction) {
 
             break;
         case ID.searchForOpponent():
+            // If Date is after 12 December 2021 23:59:59
+            if (Date.now() > 1639459199000) {
+                throw new MatchmakingClosed();
+            }
+
             await findMatch(client, interaction, 'Sur quelle plateforme souhaitez-vous jouer pour ce match ? (*60 secondes pour répondre*)');
 
             break;
@@ -722,10 +734,16 @@ async function findMatch(client, interaction, msg) {
         await ticket.delete();
 
         const count = await MatchTicket.countDocuments({ });
+        const guild = interaction.guild;
+
+        const channel = await guild.channels.fetch(process.env.FREEMODE_CHANNEL_ORGANIZATION);
+        if (!channel) {
+            throw new Error('Channel not found');
+        }
 
         // Start a match
         const threadType = interaction.guild.features.includes("PRIVATE_THREADS") ? ChannelType.PrivateThread : ChannelType.PublicThread;
-        const thread = await interaction.channel.threads.create({
+        const thread = await channel.threads.create({
             type: threadType,
             invitable: false,
             name: `${interaction.user.username} ${interaction.user.discriminator} vs ${opponent.username} ${opponent.discriminator} - ${String(count).padStart(4,'0')}`

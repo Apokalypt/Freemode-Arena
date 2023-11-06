@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "baseUrl": "./src",
+
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "target": "es2015",
+    "moduleResolution": "node",
+    "sourceMap": false,
+    "outDir": "dist/src",
+    "skipLibCheck": true,
+    "lib": ["es2021"],
+
+    "strict": true,
+    "noImplicitAny": false,
+
+    "paths": {
+      "@bot-types": [ "types" ],
+      "@models/*": [ "models/*" ],
+      "@constants": [ "constants" ],
+      "@exceptions/*": [ "exceptions/*" ],
+      "@enums": [ "enums" ]
+    }
+  }
+}

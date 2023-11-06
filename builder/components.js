@@ -1,12 +1,18 @@
 const { ButtonBuilder, ButtonStyle, SelectMenuBuilder, SelectMenuOptionBuilder } = require('discord.js');
 const ID = require('./id');
-const { getWeaponId } = require('../utils/utils');
+const { getWeaponId } = require('../utils/weapons-utils');
 
 class Components {
-    static participateToConquest() {
+    static requestToParticipateToConquest() {
         return new ButtonBuilder()
-            .setCustomId( ID.participateToConquest() )
+            .setCustomId( ID.requestToParticipateToConquest() )
             .setLabel('Je Participe!')
+            .setStyle(ButtonStyle.Primary)
+    }
+    static confirmParticipationButton() {
+        return new ButtonBuilder()
+            .setCustomId( ID.confirmParticipationToConquest() )
+            .setLabel('Oui, Je Souhaite Vraiment m\'Inscrire!')
             .setStyle(ButtonStyle.Primary)
     }
 
@@ -41,7 +47,7 @@ class Components {
 
     static weaponsCategorySelectionMenu(matchId) {
         return new SelectMenuBuilder()
-            .setCustomId( ID.weaponsCategorySelectionMenu(matchId) )
+            .setCustomId( ID.weaponsFromCategorySelectionMenu(matchId) )
             .setPlaceholder('Cliquez ici pour choisir une catégorie')
             .setMinValues(1)
             .setMaxValues(1)
@@ -116,6 +122,29 @@ class Components {
     /**
      * @param {string} matchId
      *
+     * @returns {ButtonBuilder}
+     */
+    static backMainMenuSelectionButton(matchId) {
+        return new ButtonBuilder()
+            .setCustomId( ID.weaponsButtonSelection(matchId) )
+            .setLabel('Retour Menu Principal')
+            .setStyle(ButtonStyle.Danger)
+    }
+    /**
+     * @param {string} matchId
+     *
+     * @returns {ButtonBuilder}
+     */
+    static backWeaponCategorySelectionButton(matchId) {
+        return new ButtonBuilder()
+            .setCustomId( ID.weaponsCategorySelectionMenu(matchId) )
+            .setLabel('Retour Sélection Catégorie d\'Armes')
+            .setStyle(ButtonStyle.Danger)
+    }
+
+    /**
+     * @param {string} matchId
+     *
      * @returns {SelectMenuBuilder}
      */
     static weaponsSelectionUpdateMenu(matchId) {
@@ -156,6 +185,17 @@ class Components {
             .setCustomId( ID.weaponsSelectionValidateVerified(matchId) )
             .setLabel("Je Confirme Cette Sélection")
             .setStyle(ButtonStyle.Success)
+    }
+    /**
+     * @param {string} matchId
+     *
+     * @returns {ButtonBuilder}
+     */
+    static weaponsSelectionCancelValidationButton(matchId) {
+        return new ButtonBuilder()
+            .setCustomId( ID.weaponsButtonSelection(matchId) )
+            .setLabel('Je Souhaite La Modifier')
+            .setStyle(ButtonStyle.Danger)
     }
 
     static matchRulesButton(matchId) {

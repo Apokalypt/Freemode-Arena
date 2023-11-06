@@ -1,5 +1,5 @@
-const { Events, ChannelType, EmbedBuilder, ActionRowBuilder, ComponentType } = require('discord.js');
-const { sendInteractionResponse, stringifyUserSelection, validateWeaponsSelection } = require('../utils/utils');
+const { Events, ChannelType, EmbedBuilder, ActionRowBuilder, ComponentType, MessageFlagsBitField } = require('discord.js');
+const { sendInteractionResponse, stringifyUserSelection, validateWeaponsSelection, sendMainMenuSelectionResponse, sendWeaponsCategoryMenuSelectionResponse } = require('../utils/utils');
 const MatchTicket = require('../db/MatchTicket');
 const Match = require('../db/Match');
 const ID = require('../builder/id');
@@ -11,6 +11,9 @@ const { UnknownMatch, UnknownInteraction, FreemodeArenaError, UnknownWeaponsClas
 const MaxValueForWeaponsReached = require('../errors/MaxValueForWeaponsReached');
 const { Error } = require('mongoose');
 const Participant = require('../db/Participant');
+const Embeds = require('../builder/Embeds');
+const RegistrationClosed = require('../errors/RegistrationClosed');
+const MatchmakingClosed = require('../errors/MatchmakingClosed');
 
 /**
  * @param {import('discord.js').Client} client
@@ -55,7 +58,13 @@ async function handleInteractionSelectMenu(client, interaction) {
                     {
                         ephemeral: true,
                         content: "Votre sélection a été mise à jour et correspond dorénavant à votre dernière sélection validée.\n\n" +
-                            stringifyUserSelection(lastSelection)
+                            stringifyUserSelection(lastSelection),
+                        components: [
+                            new ActionRowBuilder()
+                                .addComponents(
+                                    Components.backMainMenuSelectionButton(matchId)
+                                )
+                        ]
                     }
                 )
                 break;
@@ -86,7 +95,13 @@ async function handleInteractionSelectMenu(client, interaction) {
                     {
                         ephemeral: true,
                         content: "Votre sélection a été mise à jour et correspond dorénavant à votre dernière sélection validée sur la même map.\n\n" +
-                            stringifyUserSelection(lastSelectionSameMap)
+                            stringifyUserSelection(lastSelectionSameMap),
+                        components: [
+                            new ActionRowBuilder()
+                                .addComponents(
+                                    Components.backMainMenuSelectionButton(matchId)
+                                )
+                        ]
                     }
                 )
                 break;
@@ -100,12 +115,16 @@ async function handleInteractionSelectMenu(client, interaction) {
                         embeds: [
                             new EmbedBuilder()
                                 .setTitle('Choisissez votre classe')
-                                .setDescription('En choisissant une classe, vous écrasez votre sélection actuelle. Bien entendu, vous pourrez modifier la sélection de la classe par la suite si vous le souhaitez.')
+                                .setDescription(
+                                    '<a:warning:1022529561805721631> En choisissant une classe, vous écrasez votre sélection actuelle.\n' +
+                                    '<:info:1041766236759015454> Si vous le souhaitez, vous pourrez customiser la sélection en ajoutant/supprimant des armes.')
                                 .setColor('#0099ff')
                         ],
                         components: [
                             new ActionRowBuilder()
-                                .addComponents( Components.weaponsClassSelectionMenu(matchId) )
+                                .addComponents( Components.weaponsClassSelectionMenu(matchId) ),
+                            new ActionRowBuilder()
+                                .addComponents( Components.backMainMenuSelectionButton(matchId) )
                         ]
                     }
                 )
@@ -113,22 +132,8 @@ async function handleInteractionSelectMenu(client, interaction) {
             case ID.optionManualSelection():
                 // Show a menu to select the category of weapons
 
-                await sendInteractionResponse(
-                    interaction,
-                    {
-                        ephemeral: true,
-                        embeds: [
-                            new EmbedBuilder()
-                                .setTitle('Sélectionnez la catégorie de l\'arme que vous souhaitez ajouter/retirer')
-                                .setDescription('En choisissant une catégorie, nous vous présenterons l\'ensemble des armes de cette catégorie. Vous pourrez donc sélectionner/déselctionner les armes pour modifier votre sélection.')
-                                .setColor('#0099ff')
-                        ],
-                        components: [
-                            new ActionRowBuilder()
-                                .addComponents( Components.weaponsCategorySelectionMenu(matchId) )
-                        ]
-                    }
-                );
+                await sendWeaponsCategoryMenuSelectionResponse(interaction, matchId);
+
                 break;
         }
     } else if (interaction.customId.startsWith("weapons-class-menu-")) {
@@ -155,22 +160,7 @@ async function handleInteractionSelectMenu(client, interaction) {
             throw new InvalidMatchParticipant();
         }
 
-        // Show user match selection
-        await sendInteractionResponse(
-            interaction,
-            {
-                ephemeral: true,
-                embeds: [
-                    new EmbedBuilder()
-                        .setTitle('Votre sélection')
-                        .setDescription(
-                            "Voici votre sélection actuelle, vous ne l'avez pas encore validé et pouvez donc la modifier à tout moment.\n\n" +
-                            stringifyUserSelection(classData.weapons)
-                        )
-                        .setColor('#0099ff')
-                ]
-            }
-        )
+        await sendMainMenuSelectionResponse(interaction, classData.weapons, matchId);
     } else if (interaction.customId.startsWith("weapons-category-menu-")) {
         const matchId = interaction.customId.replace("weapons-category-menu-", "");
         const match = await Match.findById(matchId).exec();
@@ -205,6 +195,11 @@ async function handleInteractionSelectMenu(client, interaction) {
                     new ActionRowBuilder()
                         .addComponents(
                             Components.weaponsSelectionMenu(matchId, categoryData, player.weapons)
+                        ),
+                    new ActionRowBuilder()
+                        .addComponents(
+                            Components.backWeaponCategorySelectionButton(matchId),
+                            Components.backMainMenuSelectionButton(matchId)
                         )
                 ]
             });
@@ -232,14 +227,13 @@ async function handleInteractionSelectMenu(client, interaction) {
                     interaction,
                     {
                         ephemeral: true,
-                        embeds: [
-                            new EmbedBuilder()
-                                .setTitle('Votre sélection')
-                                .setDescription(
-                                    "Voici votre sélection actuelle, vous ne l'avez pas encore validé et pouvez donc la modifier à tout moment.\n\n" +
-                                    stringifyUserSelection(player.weapons)
-                                )
-                                .setColor('#0099ff')
+                        content: stringifyUserSelection(player.weapons),
+                        embeds: [ Embeds.weaponsCategorySelection() ],
+                        components: [
+                            new ActionRowBuilder()
+                                .addComponents( Components.weaponsCategorySelectionMenu(matchId) ),
+                            new ActionRowBuilder()
+                                .addComponents( Components.backMainMenuSelectionButton(matchId) )
                         ]
                     }
                 )
@@ -260,7 +254,31 @@ async function handleInteractionSelectMenu(client, interaction) {
  */
 async function handleInteractionButton(client, interaction) {
     switch (interaction.customId) {
-        case ID.participateToConquest():
+        case ID.requestToParticipateToConquest():
+            // If Date is after 12 December 2021 23:59:59
+            if (Date.now() > 1639459199000) {
+                throw new RegistrationClosed();
+            }
+
+            await sendInteractionResponse(
+                interaction,
+                {
+                    ephemeral: true,
+                    content: '⚔️ **Vous êtes sur le point de vous inscrire à Freemode Arena 3**\n\n' +
+                        'En continuant, vous confirmez avoir lu le fonctionnement du tournoi et vous vous engagez à participer.\n\n' +
+                        `<a:warning:1022529561805721631> Vous pourrez, à tout moment, vous désinscrire en contactant les <@&${process.env.FREEMODE_ARENA_ORGANIZERS_ROLE_ID}> via le fil de discussion privé qui sera créé. Cependant, merci de ne pas vous inscrire pour vous désinscrire dans la minute qui suit!\n` +
+                        '<:info:1041766236759015454> Ce même fil de discussion peut être utilisé pour poser vos questions si vous en avez !',
+                    components: [
+                        new ActionRowBuilder()
+                            .addComponents(
+                                Components.confirmParticipationButton(),
+                            ),
+                    ]
+                }
+            );
+
+            break;
+        case ID.confirmParticipationToConquest():
             // Give the role participant to the user
             await interaction.member.roles.add(process.env.FREEMODE_PARTICIPANT_ROLE_ID);
 
@@ -283,182 +301,53 @@ async function handleInteractionButton(client, interaction) {
                     }
                 });
 
-            const indent = "\u200b ".repeat(4);
-            const descriptionImportantChannel = ":fleur_de_lis: **Les salons importants**\n" +
-                `${indent}• **${thread}** : Discutez en privé avec les modérateurs et vérifiez que tout est prêt pour votre participation.\n` +
-                `${indent}• **<#${process.env.FREEMODE_CHANNEL_ORGANIZATION}>** : Trouvez des adversaires pour gagner des points et hissez-vous en haut du classement !\n` +
-                `${indent}• **<#${process.env.FREEMODE_CHANNEL_FAQ}>** : Une question ? Trouvez la réponse en utilisant notre F.A.Q. sur cet événement !`;
-
-            const messageContent = `Bienvenue ${interaction.user} !\n\n` +
-                'Ce fil de discussion **privé** vous permet de **communiquer avec les organisateurs** de l\'événement **en cas de problème ou en cas de question.**\n' +
-                '\n' +
-                '\n' +
-                `**Pour le bon fonctionnement, pouvez-vous nous fournir les éléments suivants :**\n` +
-                "\u200b ".repeat(4) + '• Un pseudonyme\n' +
-                "\u200b ".repeat(4) + '• Une validation que vous pouvez enregistrer votre gameplay\n' +
-                "\u200b ".repeat(4) + '• *Optionnel* Votre pseudo sur le Socialclub (<https://socialclub.rockstargames.com/>)\n' +
-                '\n' +
-                descriptionImportantChannel;
-
-            // Send a welcome message to add the user to the thread and all the organizers
-            const message = await thread.send(messageContent);
-            await message.edit(messageContent.replace('organisateurs', `<@&${process.env.FREEMODE_ARENA_ORGANIZERS_ROLE_ID}>`));
-            await message.pin();
-
-            await sendInteractionResponse(
+            await findMatch(
+                client,
                 interaction,
-                {
-                    ephemeral: true,
-                    embeds: [
-                        new EmbedBuilder()
-                            .setTitle('Vous êtes inscrit à Freemode Arena 3')
-                            .setDescription(descriptionImportantChannel)
-                    ]
-                }
-            );
+                'Sur quelle plateforme souhaitez-vous jouer votre premier match ? (*60 secondes pour répondre*)\n' +
+                `<:info:1041766236759015454> Cette sélection concerne uniquement votre premier match, vous pourrez sélectionner une autre plateforme, si vous le souhaitez, dans <#${process.env.FREEMODE_CHANNEL_ORGANIZATION}> pour vos prochains matchs!`
+            )
+                .catch( async err => {
+                    if (err instanceof UnknownUserPlatform) {
+                        return;
+                    }
+
+                    throw err;
+                })
+                .finally( async () => {
+                    const indent = "\u200b ".repeat(4);
+
+                    const messageContent = `Bienvenue ${interaction.user} !\n\n` +
+                        'Ce fil de discussion **privé** vous permet de **communiquer avec les organisateurs** de l\'événement **en cas de problème ou en cas de question.**\n' +
+                        '\n' +
+                        '\n' +
+                        `**Pour le bon fonctionnement, pouvez-vous nous fournir les éléments suivants :**\n` +
+                        indent + '• Un pseudonyme\n' +
+                        indent + '• Une validation que vous pouvez enregistrer votre gameplay\n' +
+                        indent + '• *Optionnel* Votre pseudo sur le Socialclub (<https://socialclub.rockstargames.com/>)\n' +
+                        '\n' +
+                        ":fleur_de_lis: **Les salons importants**\n" +
+                        `${indent}• **${thread}** : Discutez en privé avec les modérateurs et vérifiez que tout est prêt pour votre participation.\n` +
+                        `${indent}• **<#${process.env.FREEMODE_CHANNEL_ORGANIZATION}>** : Trouvez des adversaires pour gagner des points et hissez-vous en haut du classement !\n` +
+                        `${indent}• **<#${process.env.FREEMODE_CHANNEL_FAQ}>** : Une question ? Trouvez la réponse en utilisant notre F.A.Q. sur cet événement !\n` +
+                        '\n' +
+                        '<:info:1041766236759015454> Si vous souhaitez vous désinscrire pour X raisons, envoyez un message ici. Un organisateur se chargera de vous retirer du tournoi.';
+
+                    // Send a welcome message to add the user to the thread and all the organizers
+                    const message = await thread.send(messageContent);
+                    await message.edit(messageContent.replace('organisateurs', `<@&${process.env.FREEMODE_ARENA_ORGANIZERS_ROLE_ID}>`));
+                    await message.pin();
+                });
 
             break;
         case ID.searchForOpponent():
-            // Determine the user's platform
-            const platforms = Object.entries(require('../utils/platforms'))
-                .filter(([, roles]) => roles.some( roleId => interaction.member.roles.cache.has(roleId) ))
-                .map(([platformName, _roles]) => platformName);
-
-            let platform;
-            if (platforms.length === 1) {
-                platform = platforms[0];
-            } else if (platforms.length > 1) {
-                platform = await new Promise( async resolve => {
-                    const message = await sendInteractionResponse(
-                        interaction,
-                        {
-                            ephemeral: true,
-                            content: 'Sur quelle plateforme souhaitez-vous jouer ? (*Vous avez 60 secondes pour répondre*)',
-                            components: [
-                                new ActionRowBuilder()
-                                    .addComponents(
-                                        ...platforms.map( platform => Components.platformButton(platform) )
-                                    )
-                            ]
-                        }
-                    )
-
-                    const filter = i => {
-                        i.deferUpdate();
-                        return i.user.id === interaction.user.id;
-                    };
-
-                    message.awaitMessageComponent({ filter, componentType: ComponentType.Button, time: 60000 })
-                        .then( interaction => {
-                            resolve(interaction.customId.replace('collector-', ''));
-                        })
-                        .catch( async _ => {
-                            await sendInteractionResponse(
-                                interaction,
-                                {
-                                    ephemeral: true,
-                                    content: 'Vous n\'avez pas répondu dans les temps, veuillez réessayer.'
-                                }
-                            ).catch( _ => { /* Ignore */ } );
-
-                            resolve(null);
-                        });
-                });
-            }
-            if (!platform) {
-                throw new UnknownUserPlatform();
+            // If Date is after 12 December 2021 23:59:59
+            if (Date.now() > 1639459199000) {
+                throw new MatchmakingClosed();
             }
 
-            // Search an available opponents
-            const ticket = await MatchTicket.findAvailableOpponent(platform, interaction.user.id);
-            if (!ticket) {
-                await MatchTicket.create({ platform, player: interaction.user.id })
-                    .then( () => {
-                        return sendInteractionResponse(
-                            interaction,
-                            {
-                                content: `Vous avez été ajouté à la liste d\'attente sur la plateforme ${platform}.\n` +
-                                    'Vous serez notifié dès qu\'un adversaire sera disponible :thumbsup:',
-                                ephemeral: true
-                            }
-                        );
-                    })
-                    .catch( err => {
-                        // Duplicate key error
-                        if (err.code === 11000) {
-                            throw new UserAlreadyWaitingForOpponent(platform);
-                        }
+            await findMatch(client, interaction, 'Sur quelle plateforme souhaitez-vous jouer pour ce match ? (*60 secondes pour répondre*)');
 
-                        throw err;
-                    });
-            } else {
-                const opponent = await client.users.fetch(ticket.player);
-                await ticket.delete();
-
-                const count = await MatchTicket.countDocuments({ });
-
-                // Start a match
-                const threadType = interaction.guild.features.includes("PRIVATE_THREADS") ? ChannelType.PrivateThread : ChannelType.PublicThread;
-                const thread = await interaction.channel.threads.create({
-                    type: threadType,
-                    invitable: false,
-                    name: `${interaction.user.username} ${interaction.user.discriminator} vs ${opponent.username} ${opponent.discriminator} - ${String(count).padStart(4,'0')}`
-                });
-
-                // Randomly choose the map
-                const maps = require('../utils/maps');
-                const map = maps[Math.floor(Math.random() * maps.length)];
-
-                const match = await Match.create({
-                    thread: thread.id,
-                    platform,
-                    players: {
-                        '1' : {
-                            id: interaction.user.id
-                        },
-                        '2' : {
-                            id: opponent.id
-                        }
-                    },
-                    map
-                });
-
-                const indent = '\u200b '.repeat(4);
-                const message = await thread.send({
-                    embeds: [
-                        new EmbedBuilder()
-                            .setTitle(map.name)
-                            .setDescription(
-                                "Votre duel devra se réaliser sur cette carte/zone !\n\n" +
-                                "Pour rappel, voici les étapes à réaliser :\n" +
-                                indent + "1. Chaque joueur sélectionne ses armes\n" +
-                                indent + "2. Une fois ceci fait, le bot envoie un message avec les armes des deux joueurs\n" +
-                                indent + "3. Les joueurs doivent se mettre d'accord sur une date\n" +
-                                indent + "4. Les joueurs font leur match en enregistrant leur gameplay\n" +
-                                indent + "5. Les joueurs envoient leur gameplay dans ce fil de discussion ou en privé à l'un des organisateurs\n" +
-                                indent + "6. Les organisateurs vérifient les matchs et saisissent les points des joueurs"
-                            )
-                            .setImage(map.img)
-                    ],
-                    components: [
-                        new ActionRowBuilder()
-                            .addComponents( Components.weaponsButtonSelection(match._id.toString()) )
-                    ]
-                });
-                const messageContent = `Le duel entre ${interaction.user} et ${opponent} est presque prêt! **Merci de sélectionner vos armes en cliquant sur le bouton ci-dessus :arrow_heading_up:**\n\n` +
-                    `*En cas de questions ou de problèmes, vous pouvez contacter les organisateurs en privé ou en les mentionnant ici.*`
-                const reply = await message.reply(messageContent);
-                await reply.edit(messageContent.replace('organisateurs', `<@&${process.env.FREEMODE_ARENA_ORGANIZERS_ROLE_ID}>`));
-
-                await sendInteractionResponse(
-                    interaction,
-                    {
-                        content: "Nous vous avons trouvé un adversaire!\n" +
-                            `**Rendez-vous dans votre fil de discussion ( <#${thread.id}> ) pour découvrir le détail du match et pour convenir d'une date avec votre adversaire.**`,
-                        ephemeral: true
-                    }
-                );
-            }
             break;
         default:
             if (interaction.customId.startsWith('rules-')) {
@@ -516,6 +405,19 @@ async function handleInteractionButton(client, interaction) {
                         ]
                     }
                 )
+
+                break;
+            } else if (interaction.customId.startsWith('weapons-select-category-menu-')) {
+                const matchId = interaction.customId.split('-')[4];
+                const match = await Match.findById(matchId).exec();
+                if (!match) {
+                    throw new UnknownMatch();
+                }
+                if (match.players['1'].id !== interaction.user.id && match.players['2'].id !== interaction.user.id) {
+                    throw new InvalidMatchParticipant();
+                }
+
+                await sendWeaponsCategoryMenuSelectionResponse(interaction, matchId);
 
                 break;
             } else if (interaction.customId.startsWith('weapons-validate-selection-verified-')) {
@@ -651,6 +553,7 @@ async function handleInteractionButton(client, interaction) {
                         components: [
                             new ActionRowBuilder()
                                 .addComponents(
+                                    Components.weaponsSelectionCancelValidationButton(matchId),
                                     Components.weaponsSelectionValidateVerifiedButton(matchId)
                                 )
                         ]
@@ -670,27 +573,7 @@ async function handleInteractionButton(client, interaction) {
                     throw new WeaponsSelectionAlreadyValidated();
                 }
 
-                await sendInteractionResponse(
-                    interaction,
-                    {
-                        ephemeral: true,
-                        content: "**Sélectionnez stratégiquement vos armes car vous êtes limité !**\n" +
-                            "\n" +
-                            "<:info:1041766236759015454> Chaque arme coûte un certain nombre de points. La somme des points des armes sélectionnées ne doit pas dépasser 10 points\n" +
-                            "\n" +
-                            stringifyUserSelection(userData.weapons),
-                        components: [
-                            new ActionRowBuilder()
-                                .addComponents(
-                                    Components.weaponsSelectionUpdateMenu(matchId)
-                                ),
-                            new ActionRowBuilder()
-                                .addComponents(
-                                    Components.weaponsSelectionValidateButton(matchId)
-                                )
-                        ]
-                    }
-                )
+                await sendMainMenuSelectionResponse(interaction, userData.weapons, matchId);
 
                 break;
             }
@@ -711,8 +594,13 @@ module.exports = {
         if (!interaction.inCachedGuild()) return;
         if (interaction.customId.startsWith('collector-')) return;
 
+        const shouldDeferUpdate = interaction.message.flags.has(MessageFlagsBitField.Flags.Ephemeral)
         try {
-            await interaction.deferReply({ ephemeral: true });
+            if (shouldDeferUpdate) {
+                await interaction.deferUpdate();
+            } else {
+                await interaction.deferReply({ ephemeral: true });
+            }
 
             if (interaction.isButton()) {
                 await handleInteractionButton(client, interaction);
@@ -733,8 +621,186 @@ module.exports = {
 
             await sendInteractionResponse(
                 interaction,
-                { embeds: [ new EmbedBuilder().setDescription(message).setColor('#FF0000') ], ephemeral: true }
+                { embeds: [ new EmbedBuilder().setDescription(message).setColor('#FF0000') ], ephemeral: true },
+                shouldDeferUpdate
             );
         }
+    }
+}
+
+
+/**
+ *
+ * @param {import('discord.js').SelectMenuInteraction<'cached'> | import('discord.js').ButtonInteraction<'cached'>} interaction
+ * @param {string} msg
+ * @returns {Promise<string>}
+ */
+async function getUserPlatform(interaction, msg) {
+    // Determine the user's platform
+    const platforms = Object.entries(require('../utils/platforms'))
+        .filter(([, roles]) => roles.some( roleId => interaction.member.roles.cache.has(roleId) ))
+        .map(([platformName, _roles]) => platformName);
+
+    let platform;
+    if (platforms.length === 1) {
+        platform = platforms[0];
+    } else if (platforms.length > 1) {
+        platform = await new Promise( async resolve => {
+            const message = await sendInteractionResponse(
+                interaction,
+                {
+                    ephemeral: true,
+                    content: '*Nous n\'avons pas pu déterminer automatiquement votre plateforme*. \n\n' +
+                        msg,
+                    components: [
+                        new ActionRowBuilder()
+                            .addComponents(
+                                ...platforms.map( platform => Components.platformButton(platform) )
+                            )
+                    ]
+                }
+            )
+
+            const filter = i => {
+                i.deferUpdate();
+                return i.user.id === interaction.user.id;
+            };
+
+            message.awaitMessageComponent({ filter, componentType: ComponentType.Button, time: 60000 })
+                .then( interaction => {
+                    resolve(interaction.customId.replace('collector-', ''));
+                })
+                .catch( async _ => {
+                    let retryIndication = `Veuillez réessayer en vous rendant dans <#${process.env.FREEMODE_CHANNEL_ORGANIZATION}> et en cliquant sur "Je Cherche Un Adversaire!"`;
+                    if (interaction.channelId === process.env.FREEMODE_CHANNEL_ORGANIZATION) {
+                        retryIndication = `Veuillez réessayer en cliquant sur "Je Cherche Un Adversaire!"`;
+                    }
+
+                    await sendInteractionResponse(
+                        interaction,
+                        {
+                            ephemeral: true,
+                            content: 'Vous n\'avez pas répondu dans les temps. Par conséquent, nous n\'avons pas pu vous lancer une recherche de match.\n' +
+                                retryIndication,
+                        }
+                    ).catch( _ => { /* Ignore */ } );
+
+                    resolve(null);
+                });
+        });
+    }
+    if (!platform) {
+        throw new UnknownUserPlatform();
+    }
+
+    return platform;
+}
+
+/**
+ * @param {import('discord.js').Client} client
+ * @param {import('discord.js').SelectMenuInteraction<'cached'> | import('discord.js').ButtonInteraction<'cached'>} interaction
+ * @param {string} msg
+ *
+ * @returns {Promise<void>}
+ */
+async function findMatch(client, interaction, msg) {
+    // Determine the user's platform
+    const platform = await getUserPlatform(interaction, msg);
+
+    // Search an available opponents
+    const ticket = await MatchTicket.findAvailableOpponent(platform, interaction.user.id);
+    if (!ticket) {
+        await MatchTicket.create({ platform, player: interaction.user.id })
+            .then( () => {
+                return sendInteractionResponse(
+                    interaction,
+                    {
+                        content: `Vous avez été ajouté à la liste d\'attente sur la plateforme ${platform}.\n` +
+                            'Vous serez notifié dès qu\'un adversaire sera disponible :thumbsup:',
+                        ephemeral: true
+                    }
+                );
+            })
+            .catch( err => {
+                // Duplicate key error
+                if (err.code === 11000) {
+                    throw new UserAlreadyWaitingForOpponent(platform);
+                }
+
+                throw err;
+            });
+    } else {
+        const opponent = await client.users.fetch(ticket.player);
+        await ticket.delete();
+
+        const count = await MatchTicket.countDocuments({ });
+        const guild = interaction.guild;
+
+        const channel = await guild.channels.fetch(process.env.FREEMODE_CHANNEL_ORGANIZATION);
+        if (!channel) {
+            throw new Error('Channel not found');
+        }
+
+        // Start a match
+        const threadType = interaction.guild.features.includes("PRIVATE_THREADS") ? ChannelType.PrivateThread : ChannelType.PublicThread;
+        const thread = await channel.threads.create({
+            type: threadType,
+            invitable: false,
+            name: `${interaction.user.username} ${interaction.user.discriminator} vs ${opponent.username} ${opponent.discriminator} - ${String(count).padStart(4,'0')}`
+        });
+
+        // Randomly choose the map
+        const maps = require('../utils/maps');
+        const map = maps[Math.floor(Math.random() * maps.length)];
+
+        const match = await Match.create({
+            thread: thread.id,
+            platform,
+            players: {
+                '1' : {
+                    id: interaction.user.id
+                },
+                '2' : {
+                    id: opponent.id
+                }
+            },
+            map
+        });
+
+        const indent = '\u200b '.repeat(4);
+        const message = await thread.send({
+            embeds: [
+                new EmbedBuilder()
+                    .setTitle(map.name)
+                    .setDescription(
+                        "Votre duel devra se réaliser sur cette carte/zone !\n\n" +
+                        "Pour rappel, voici les étapes à réaliser :\n" +
+                        indent + "1. Chaque joueur sélectionne ses armes\n" +
+                        indent + "2. Une fois ceci fait, le bot envoie un message avec les armes des deux joueurs\n" +
+                        indent + "3. Les joueurs doivent se mettre d'accord sur une date\n" +
+                        indent + "4. Les joueurs font leur match en enregistrant leur gameplay\n" +
+                        indent + "5. Les joueurs envoient leur gameplay dans ce fil de discussion ou en privé à l'un des organisateurs\n" +
+                        indent + "6. Les organisateurs vérifient les matchs et saisissent les points des joueurs"
+                    )
+                    .setImage(map.img)
+            ],
+            components: [
+                new ActionRowBuilder()
+                    .addComponents( Components.weaponsButtonSelection(match._id.toString()) )
+            ]
+        });
+        const messageContent = `Le duel entre ${interaction.user} et ${opponent} est presque prêt! **Merci de sélectionner vos armes en cliquant sur le bouton ci-dessus :arrow_heading_up:**\n\n` +
+            `*En cas de questions ou de problèmes, vous pouvez contacter les organisateurs en privé ou en les mentionnant ici.*`
+        const reply = await message.reply(messageContent);
+        await reply.edit(messageContent.replace('organisateurs', `<@&${process.env.FREEMODE_ARENA_ORGANIZERS_ROLE_ID}>`));
+
+        await sendInteractionResponse(
+            interaction,
+            {
+                content: "Nous vous avons trouvé un adversaire!\n" +
+                    `**Rendez-vous dans votre fil de discussion ( <#${thread.id}> ) pour découvrir le détail du match et pour convenir d'une date avec votre adversaire.**`,
+                ephemeral: true
+            }
+        );
     }
 }

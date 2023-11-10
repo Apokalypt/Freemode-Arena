@@ -1,9 +1,29 @@
-<div class="text-white h-screen bg-red-900">
-    <fa-header-padding />
+<div class="text-white h-screen flex flex-col">
+    <fa-header-padding class="grow-0" />
 
-    <p>Before Folding</p>
+    <section class="grow flex flex-col gap-10 justify-center items-center">
+        <h1 class="text-8xl">Freemode Arena 4</h1>
+        <p class="text-lg">La 4ème saison de Freemode Arena est sur le point de commencer, découvrez comment participer ci-dessous!</p>
+        <button [routerLink]="'/how-to-participate'" class="relative inline-flex items-center justify-center p-0.5 mt-5 mr-2 overflow-hidden text-sm font-medium text-white rounded-lg group bg-gradient-to-br from-red-700 to-orange-400 group-hover:from-pink-500 group-hover:to-orange-400 hover:text-gray-100 dark:text-white focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800">
+          <span class="relative px-5 py-2.5 transition-all ease-in duration-75 bg-transparent dark:bg-gray-900 rounded-md">
+              Comment participer?
+          </span>
+        </button>
+    </section>
 </div>
 
-<div class="text-white h-screen bg-green-900">
-    <p>After Folding</p>
+<div class="curved-div overflow-hidden text-white text-center bg-red-600">
+    <h1 class="text-7xl my-5">Késako ?</h1>
+    <p class="px-8">
+        Freemode Arena est un championnat dans lequel des joueurs s'affrontent en 1 vs 1 dans une zone délimitée de la
+        carte de GTA Online. Pour chaque affrontement, les joueurs choisissent leurs armes stratégiquement afin
+        d'augmenter leurs chances de victoire.
+        <br />
+        <br />
+        Généralement organisé sur 2 semaines, le championnat vous permet non seulement de vous amuser mais aussi de
+        gagner des récompenses en fonction de votre classement et de votre participation.
+    </p>
+    <svg viewBox="0 0 1440 319" class="block">
+        <path d="M0,32L48,80C96,128,192,224,288,224C384,224,480,128,576,90.7C672,53,768,75,864,96C960,117,1056,139,1152,149.3C1248,160,1344,160,1392,160L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+    </svg>
 </div>

@@ -8,14 +8,18 @@ import { SlashCommand } from "./command/SlashCommand";
 import { UserContextMenuCommand } from "./command/UserContextMenuCommand";
 import { MessageContextMenuCommand } from "./command/MessageContextMenuCommand";
 
+type CommandsList = {
+    [ApplicationCommandType.ChatInput]: Map<string, SlashCommand>;
+    [ApplicationCommandType.User]: Map<string, UserContextMenuCommand>;
+    [ApplicationCommandType.Message]: Map<string, MessageContextMenuCommand>;
+};
+
 export class BotClient {
     readonly discord: Client<true>;
 
     readonly utils: Utils;
 
-    readonly commands: {
-        [K in ApplicationCommandType]: Map<string, BaseCommand<K>>;
-    };
+    readonly commands: CommandsList;
 
     private constructor(discord: Client<true>) {
         this.discord = discord;
@@ -49,16 +53,25 @@ export class BotClient {
     }
 
     public getCommand<K extends ApplicationCommandType>(type: K, name: string): BaseCommand<K> | undefined {
+        // FIXME
+        // @ts-ignore
         return this.commands[type]?.get(name);
     }
     public publishCommandsToGuild(guild: Guild) {
         const commands = [
-            ...Array.from(this.commands[ApplicationCommandType.ChatInput].values()).map( c => c.build() ),
-            ...Array.from(this.commands[ApplicationCommandType.User].values()).map( c => c.build() ),
-            ...Array.from(this.commands[ApplicationCommandType.Message].values()).map( c => c.build() )
+            ...Array.from(this.commands[ApplicationCommandType.ChatInput].values())
+                .filter( c => !c.isGlobal ),
+            ...Array.from(this.commands[ApplicationCommandType.User].values()),
+            ...Array.from(this.commands[ApplicationCommandType.Message].values())
         ];
 
-        return guild.commands.set(commands);
+        return guild.commands.set( commands.map( c => c.build() ) );
+    }
+    public publishGlobalCommands() {
+        const commands = Array.from(this.commands[ApplicationCommandType.ChatInput].values())
+            .filter( c => c.isGlobal );
+
+        return this.discord.application.commands.set( commands.map( c => c.build() ) );
     }
 
     private _registerDiscordClientEvents(dir = "../events"): void {

@@ -20,6 +20,7 @@ type CommandOption = Record<string, SlashCommandOptionValuable> | Record<string,
 
 export class SlashCommand<O extends CommandOption = CommandOption> extends BaseCommand<ApplicationCommandType.ChatInput> {
     readonly options: O;
+    readonly isGlobal: boolean;
 
     constructor(
         name: string, nameLocalized: LocalizationMap | undefined,
@@ -28,7 +29,8 @@ export class SlashCommand<O extends CommandOption = CommandOption> extends BaseC
         action: O extends Record<string, SlashCommandOptionValuable> ? (this: SlashCommand<O>, client: BotClient, interaction: ChatInputCommandInteraction) => Promise<void>
             : undefined,
         defaultPermissions?: bigint,
-        allowInDm?: boolean
+        allowInDm?: boolean,
+        isGlobal?: boolean
     ) {
         let finalAction: (client: BotClient, interaction: ChatInputCommandInteraction) => Promise<void>;
         if (action) {
@@ -47,6 +49,7 @@ export class SlashCommand<O extends CommandOption = CommandOption> extends BaseC
         super(ApplicationCommandType.ChatInput, name, nameLocalized, description, descriptionLocalized, finalAction, defaultPermissions, allowInDm);
 
         this.options = options;
+        this.isGlobal = isGlobal ?? false;
     }
 
     public async autocomplete(client: BotClient, interaction: AutocompleteInteraction): Promise<void> {

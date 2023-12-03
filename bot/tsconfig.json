@@ -18,9 +18,12 @@
     "paths": {
       "@bot-types": [ "types" ],
       "@models/*": [ "models/*" ],
+      "@managers/*": [ "managers/*" ],
+      "@services/*": [ "services/*" ],
       "@constants": [ "constants" ],
+      "@decorators/*": [ "decorators/*" ],
       "@exceptions/*": [ "exceptions/*" ],
-      "@enums": [ "enums" ]
+      "@enums": [ "enums" ],
     }
   }
 }

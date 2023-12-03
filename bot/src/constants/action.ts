@@ -1,0 +1,2 @@
+export const SEPARATOR_PROPERTY_INTERACTION_ID = ":";
+

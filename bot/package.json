@@ -21,13 +21,16 @@
   },
   "homepage": "https://github.com/Apokalypt/Whiteout-Survival-Bot#readme",
   "dependencies": {
+    "@typegoose/typegoose": "^11.7.1",
     "discord.js": "^14.13.0",
     "dotenv": "^16.3.1",
     "module-alias": "^2.2.3",
+    "uuid": "^9.0.1",
     "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/node": "^18.18.8",
+    "@types/uuid": "^9.0.7",
     "discord-api-types": "^0.37.62",
     "nodemon": "^3.0.1",
     "ts-node": "^10.9.1",
@@ -36,8 +39,11 @@
   "_moduleAliases": {
     "@bot-types": "./src/types",
     "@models": "./src/models",
+    "@managers": "./src/managers",
     "@exceptions": "./src/exceptions",
     "@constants": "./src/constants",
-    "@enums": "./src/enums"
+    "@enums": "./src/enums",
+    "@decorators": "./src/decorators",
+    "@services": "./src/services"
   }
 }

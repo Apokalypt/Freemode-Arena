@@ -10,3 +10,5 @@ export * from "./commands/ValueTypeFromCommandOptionType";
 
 export * from "./ObjectValues";
 export * from "./Nullish";
+
+export * from "./ClassExtraction";

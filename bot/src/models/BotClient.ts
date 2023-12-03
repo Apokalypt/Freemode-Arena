@@ -7,6 +7,7 @@ import { BaseCommand } from "./command/BaseCommand";
 import { SlashCommand } from "./command/SlashCommand";
 import { UserContextMenuCommand } from "./command/UserContextMenuCommand";
 import { MessageContextMenuCommand } from "./command/MessageContextMenuCommand";
+import { ActionsManager } from "@managers/ActionsManager";
 
 type CommandsList = {
     [ApplicationCommandType.ChatInput]: Map<string, SlashCommand>;
@@ -19,14 +20,18 @@ export class BotClient {
 
     readonly utils: Utils;
 
-    readonly commands: CommandsList;
+    readonly actions: ActionsManager;
+
+    private readonly _commands: CommandsList;
 
     private constructor(discord: Client<true>) {
         this.discord = discord;
 
         this.utils = new Utils(this);
 
-        this.commands = {
+        this.actions = new ActionsManager(this);
+
+        this._commands = {
             [ApplicationCommandType.ChatInput]: this._getDiscordSlashCommands()
                 .reduce((map, command) => map.set(command.name, command), new Map()),
             [ApplicationCommandType.User]: this._getDiscordUserContextCommands()
@@ -55,20 +60,20 @@ export class BotClient {
     public getCommand<K extends ApplicationCommandType>(type: K, name: string): BaseCommand<K> | undefined {
         // FIXME
         // @ts-ignore
-        return this.commands[type]?.get(name);
+        return this._commands[type]?.get(name);
     }
     public publishCommandsToGuild(guild: Guild) {
         const commands = [
-            ...Array.from(this.commands[ApplicationCommandType.ChatInput].values())
+            ...Array.from(this._commands[ApplicationCommandType.ChatInput].values())
                 .filter( c => !c.isGlobal ),
-            ...Array.from(this.commands[ApplicationCommandType.User].values()),
-            ...Array.from(this.commands[ApplicationCommandType.Message].values())
+            ...Array.from(this._commands[ApplicationCommandType.User].values()),
+            ...Array.from(this._commands[ApplicationCommandType.Message].values())
         ];
 
         return guild.commands.set( commands.map( c => c.build() ) );
     }
     public publishGlobalCommands() {
-        const commands = Array.from(this.commands[ApplicationCommandType.ChatInput].values())
+        const commands = Array.from(this._commands[ApplicationCommandType.ChatInput].values())
             .filter( c => c.isGlobal );
 
         return this.discord.application.commands.set( commands.map( c => c.build() ) );

@@ -54,7 +54,7 @@ export = new Event(
 
                 let action: Action | null = null;
                 try {
-                    action = model.fromInteractionId(client, interaction);
+                    action = model.fromInteractionId(interaction);
                 } catch (_) { /* Ignore */ }
 
                 if (!action) {

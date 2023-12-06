@@ -29,7 +29,7 @@ export class BotClient {
 
         this.utils = new Utils(this);
 
-        this.actions = new ActionsManager(this);
+        this.actions = new ActionsManager();
 
         this._commands = {
             [ApplicationCommandType.ChatInput]: this._getDiscordSlashCommands()

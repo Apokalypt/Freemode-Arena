@@ -77,7 +77,7 @@ export class MatchService {
             customId: "dummy-id-0"
         };
         const action = new ShowWeaponCategorySelectionAction({ });
-        await client.actions.linkComponentToAction(action, buttonToSelectWeapons);
+        client.actions.linkComponentToAction(buttonToSelectWeapons, action);
 
         await thread.send({
             content: `# <@${ticket.participant._id}> VS <@${opponent._id}>\n` +

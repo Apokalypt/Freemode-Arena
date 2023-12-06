@@ -25,7 +25,7 @@ export class RegisterForChampionshipAction extends Action<"ACTION_REGISTER_CHAMP
     protected override _getContext(
         client: BotClient,
         input: InputRegisterForChampionshipAction,
-        interaction?: RepliableInteraction
+        interaction: RepliableInteraction
     ): RegisterForChampionshipActionExecutionContext {
         return new RegisterForChampionshipActionExecutionContext(client, RegisterForChampionshipAction, input, interaction);
     }

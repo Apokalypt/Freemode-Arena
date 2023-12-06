@@ -37,7 +37,7 @@ export class UpdateWeaponsSelectionAction extends Action<"ACTION_UPDATE_WEAPONS_
     protected override _getContext(
         client: BotClient,
         input: InputUpdateWeaponsSelectionAction,
-        interaction?: RepliableInteraction
+        interaction: RepliableInteraction
     ): UpdateWeaponsSelectionActionExecutionContext {
         return new UpdateWeaponsSelectionActionExecutionContext(client,UpdateWeaponsSelectionAction, input, interaction);
     }
@@ -139,7 +139,7 @@ class UpdateWeaponsSelectionActionExecutionContext<IsValidated extends true | fa
             }) )
         };
         const action = new UpdateWeaponsSelectionAction({ categoryId: this.input.categoryId });
-        await this._client.actions.linkComponentToAction(action, weaponsSelectMenu, "weaponIds");
+        this._client.actions.linkComponentToAction(weaponsSelectMenu, action, "weaponIds");
 
         const validationButton: ButtonComponentData = {
             type: ComponentType.Button,
@@ -148,7 +148,7 @@ class UpdateWeaponsSelectionActionExecutionContext<IsValidated extends true | fa
             label: "Valider la sélection"
         };
         const actionToValidate = new ValidateWeaponsSelectionAction({ });
-        await this._client.actions.linkComponentToAction(actionToValidate, validationButton);
+        this._client.actions.linkComponentToAction(validationButton, actionToValidate);
 
         let actualSelectionSection: string;
         if (player.weapons.selection.length === 0) {

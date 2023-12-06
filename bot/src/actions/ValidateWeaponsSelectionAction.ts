@@ -25,7 +25,7 @@ export class ValidateWeaponsSelectionAction extends Action<"ACTION_VALIDATE_WEAP
     protected override _getContext(
         client: BotClient,
         input: InputValidateWeaponsSelectionAction,
-        interaction?: RepliableInteraction
+        interaction: RepliableInteraction
     ): ValidateWeaponsSelectionActionExecutionContext {
         return new ValidateWeaponsSelectionActionExecutionContext(client,ValidateWeaponsSelectionAction, input, interaction);
     }

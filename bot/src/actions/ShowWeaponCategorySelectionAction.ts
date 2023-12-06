@@ -26,7 +26,7 @@ export class ShowWeaponCategorySelectionAction extends Action<"ACTION_SHOW_WEAPO
     protected override _getContext(
         client: BotClient,
         input: InputShowWeaponCategorySelectionAction,
-        interaction?: RepliableInteraction
+        interaction: RepliableInteraction
     ): ShowWeaponCategorySelectionActionExecutionContext {
         return new ShowWeaponCategorySelectionActionExecutionContext(client,ShowWeaponCategorySelectionAction, input, interaction);
     }
@@ -88,7 +88,7 @@ class ShowWeaponCategorySelectionActionExecutionContext<IsValidated extends true
             }) )
         };
         const action = new ShowWeaponsSelectionAction({ });
-        await this._client.actions.linkComponentToAction(action, categorySelectMenu, "categoryId");
+        this._client.actions.linkComponentToAction(categorySelectMenu, action, "categoryId");
 
         const validationButton: ButtonComponentData = {
             type: ComponentType.Button,
@@ -97,7 +97,7 @@ class ShowWeaponCategorySelectionActionExecutionContext<IsValidated extends true
             label: "Valider la sélection"
         };
         const actionToValidate = new ValidateWeaponsSelectionAction({ });
-        await this._client.actions.linkComponentToAction(actionToValidate, validationButton);
+        this._client.actions.linkComponentToAction(validationButton, actionToValidate);
 
         await this._answer({
             content: "## Sélection des armes\n" +

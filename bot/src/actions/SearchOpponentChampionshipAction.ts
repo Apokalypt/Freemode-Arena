@@ -24,7 +24,7 @@ export class SearchOpponentChampionshipAction extends Action<"ACTION_SEARCH_OPPO
     protected override _getContext(
         client: BotClient,
         input: InputSearchOpponentChampionshipAction,
-        interaction?: RepliableInteraction
+        interaction: RepliableInteraction
     ): SearchOpponentChampionshipActionExecutionContext {
         return new SearchOpponentChampionshipActionExecutionContext(client,SearchOpponentChampionshipAction, input, interaction);
     }

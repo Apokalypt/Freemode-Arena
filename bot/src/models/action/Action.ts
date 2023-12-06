@@ -1,4 +1,3 @@
-import type { DocumentType } from "@typegoose/typegoose";
 import type {
     APISelectMenuOption,
     BaseMessageOptions,
@@ -24,8 +23,8 @@ import {
     TextInputStyle
 } from "discord.js";
 import { v4 } from "uuid";
+import { Types } from "mongoose";
 import { getModelForClass, Prop } from "@typegoose/typegoose";
-import { isValidObjectId, Types } from "mongoose";
 import { Model, RequiredProp } from "@decorators/database";
 import {
     PropertyInjectableFromInteraction,
@@ -79,19 +78,12 @@ export class Action<Type extends ActionCodes = ActionCodes> {
         this.once = data.once;
     }
 
-    public async startFromObject(client: BotClient, source?: RepliableInteraction): Promise<void> {
+    public async startFromObject(client: BotClient, source: RepliableInteraction): Promise<void> {
         return this._execute(client, source);
     }
-    public async startFromDatabase(this: DocumentType<Action>, client: BotClient, source?: RepliableInteraction): Promise<void> {
-        await this._execute(client, source);
 
-        if (this.once) {
-            await client.actions.delete(this);
-        }
-    }
-
-    public static fromInteractionId(client: BotClient, interaction: RepliableInteraction): Action {
-        if (!interaction.isMessageComponent() || isValidObjectId(interaction.customId)) {
+    public static fromInteractionId(interaction: RepliableInteraction): Action {
+        if (!interaction.isMessageComponent()) {
             throw new ActionNotSerializableException();
         }
 
@@ -190,7 +182,7 @@ export class Action<Type extends ActionCodes = ActionCodes> {
     }
 
 
-    private async _execute(client: BotClient, source?: RepliableInteraction) {
+    private async _execute(client: BotClient, source: RepliableInteraction) {
         const context = this._getContext(client, this._getInput(), source);
         await context.process();
     }
@@ -207,13 +199,12 @@ export class Action<Type extends ActionCodes = ActionCodes> {
     protected _getContext(
         _client: BotClient,
         _input: InputAction<Type>,
-        _source?: RepliableInteraction
+        _source: RepliableInteraction
     ): ActionExecutionContext<false, InputAction<Type>, InputActionValidated<Type>, Type> {
         throw new NotSupportedException();
     }
 }
 export const ActionModel = getModelForClass(Action);
-export type ActionDocument = DocumentType<Action>;
 
 
 export type InputAction<Code extends ActionCodes> = {
@@ -240,11 +231,8 @@ export abstract class ActionExecutionContext<
 > {
     executed = false;
 
-    protected _interaction: RepliableInteraction | undefined;
+    protected _interaction: RepliableInteraction;
 
-    public get guildId(): Snowflake {
-        return this.input.guildId ?? "";
-    }
     public get __type(): Code {
         return this.input.__type;
     }
@@ -253,15 +241,13 @@ export abstract class ActionExecutionContext<
         protected readonly _client: BotClient,
         protected readonly _action: typeof Action<Code>,
         public readonly input: IsValidated extends true ? InputValidated : Input,
-        protected readonly _source: RepliableInteraction | undefined
+        protected readonly _source: RepliableInteraction
     ) {
         this._interaction = this._source;
     }
 
     public async process() {
-        if (this._interaction) {
-            this._injectDataFromInteraction();
-        }
+        this._injectDataFromInteraction();
 
         await this._checkActionValidity();
         return (this as ActionExecutionContext<true, Input, InputValidated, Code>)._execute()
@@ -271,7 +257,7 @@ export abstract class ActionExecutionContext<
     }
 
     private _injectDataFromInteraction() {
-        if (!this._interaction || this._interaction?.isModalSubmit()) {
+        if (this._interaction.isModalSubmit()) {
             return;
         }
 
@@ -362,42 +348,13 @@ export abstract class ActionExecutionContext<
 
     }
 
-    protected async _getExecutorUser(cantBeUndefined: true): Promise<User>;
-    protected async _getExecutorUser(cantBeUndefined?: boolean): Promise<User | undefined>;
-    protected async _getExecutorUser(cantBeUndefined = true): Promise<User | undefined> {
-        if (!this.input.executorId) {
-            if (cantBeUndefined) {
-                throw new InvalidActionException("Impossible de déterminer l'utilisateur qui fait l'action...");
-            }
-
-            return undefined;
-        }
-
-        return this._client.discord.users.fetch(this.input.executorId)
-            .catch(() => {
-                if (cantBeUndefined) {
-                    throw new InvalidActionException("Impossible de déterminer l'utilisateur qui fait l'action...");
-                }
-
-                return undefined;
-            });
-    }
-
     protected async _deferAnswer() {
-        if (!this._interaction) {
-            return;
-        }
-
-        await this._interaction.deferReply({ ephemeral: true })
+        return this._interaction.deferReply({ ephemeral: true })
             .catch( _ => null );
     }
 
     protected async _answer(content: BaseMessageOptions & { ephemeral?: boolean }) {
-        if (!this._interaction) {
-            return;
-        }
-
-        await this._client.utils.sendInteractionAnswer(this._interaction, content);
+        return this._client.utils.sendInteractionAnswer(this._interaction, content);
     }
 
     protected async _askForBinaryChoice(messageContent: string, labels?: BinaryChoiceLabels): Promise<boolean> {

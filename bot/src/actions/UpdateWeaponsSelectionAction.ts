@@ -1,8 +1,8 @@
-import { getDiscriminatorModelForClass, Prop, PropType } from "@typegoose/typegoose";
-import type { RepliableInteraction, StringSelectMenuComponentData } from "discord.js";
-import { ButtonComponentData, ButtonStyle, ComponentType } from "discord.js";
+import type { StringSelectMenuComponentData } from "discord.js";
 import type { BotClient } from "@models/BotClient";
-import type { WithoutModifiers } from "@bot-types";
+import type { WithoutModifiers, InteractionForAction } from "@bot-types";
+import { getDiscriminatorModelForClass, Prop, PropType } from "@typegoose/typegoose";
+import { ButtonComponentData, ButtonStyle, ComponentType } from "discord.js";
 import { Action, ActionExecutionContext, ActionModel, InputAction, InputActionValidated } from "@models/action/Action";
 import { IntermediateModel, RequiredProp } from "@decorators/database";
 import { InvalidActionException } from "@exceptions/actions/InvalidActionException";
@@ -37,7 +37,7 @@ export class UpdateWeaponsSelectionAction extends Action<"ACTION_UPDATE_WEAPONS_
     protected override _getContext(
         client: BotClient,
         input: InputUpdateWeaponsSelectionAction,
-        interaction: RepliableInteraction
+        interaction: InteractionForAction<'cached'>
     ): UpdateWeaponsSelectionActionExecutionContext {
         return new UpdateWeaponsSelectionActionExecutionContext(client,UpdateWeaponsSelectionAction, input, interaction);
     }
@@ -107,12 +107,12 @@ class UpdateWeaponsSelectionActionExecutionContext<IsValidated extends true | fa
     protected async _execute(this:UpdateWeaponsSelectionActionExecutionContext<true>): Promise<void> {
         await this._deferAnswer();
 
-        const participant = await ParticipantModel.findById(this._interaction?.user.id);
+        const participant = await ParticipantModel.findById(this._source.user.id);
         if (!participant) {
             throw new UserNotRegisteredException();
         }
 
-        const match = await MatchService.instance.getMatchFromDiscordChannel(this._interaction?.guildId!, this._interaction?.channelId!);
+        const match = await MatchService.instance.getMatchFromDiscordChannel(this._source.guildId, this._source.channelId);
         if (!match) {
             throw new UnknownMatchException();
         }

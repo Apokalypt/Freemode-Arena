@@ -12,3 +12,5 @@ export * from "./ObjectValues";
 export * from "./Nullish";
 
 export * from "./ClassExtraction";
+
+export * from "./InteractionForAction";

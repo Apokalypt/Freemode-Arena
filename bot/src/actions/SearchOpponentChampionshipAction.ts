@@ -1,6 +1,5 @@
-import type { RepliableInteraction } from "discord.js";
 import type { BotClient } from "@models/BotClient";
-import type { WithoutModifiers } from "@bot-types";
+import type { WithoutModifiers, InteractionForAction } from "@bot-types";
 import { getDiscriminatorModelForClass } from "@typegoose/typegoose";
 import { Action, ActionExecutionContext, ActionModel, InputAction, InputActionValidated } from "@models/action/Action";
 import { IntermediateModel } from "@decorators/database";
@@ -24,7 +23,7 @@ export class SearchOpponentChampionshipAction extends Action<"ACTION_SEARCH_OPPO
     protected override _getContext(
         client: BotClient,
         input: InputSearchOpponentChampionshipAction,
-        interaction: RepliableInteraction
+        interaction: InteractionForAction<'cached'>
     ): SearchOpponentChampionshipActionExecutionContext {
         return new SearchOpponentChampionshipActionExecutionContext(client,SearchOpponentChampionshipAction, input, interaction);
     }
@@ -49,7 +48,7 @@ class SearchOpponentChampionshipActionExecutionContext<IsValidated extends true 
     protected async _execute(this:SearchOpponentChampionshipActionExecutionContext<true>): Promise<void> {
         await this._deferAnswer();
 
-        const participant = await ParticipantModel.findById(this._interaction?.user.id);
+        const participant = await ParticipantModel.findById(this._source.user.id);
         if (!participant) {
             throw new UserNotRegisteredException();
         }

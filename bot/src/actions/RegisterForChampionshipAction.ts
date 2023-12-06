@@ -1,8 +1,7 @@
 import { getDiscriminatorModelForClass } from "@typegoose/typegoose";
-import type { RepliableInteraction } from "discord.js";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType } from "discord.js";
 import type { BotClient } from "@models/BotClient";
-import type { WithoutModifiers } from "@bot-types";
+import type { WithoutModifiers, InteractionForAction } from "@bot-types";
 import { Action, ActionExecutionContext, ActionModel, InputAction, InputActionValidated } from "@models/action/Action";
 import { IntermediateModel } from "@decorators/database";
 import { InvalidActionException } from "@exceptions/actions/InvalidActionException";
@@ -25,7 +24,7 @@ export class RegisterForChampionshipAction extends Action<"ACTION_REGISTER_CHAMP
     protected override _getContext(
         client: BotClient,
         input: InputRegisterForChampionshipAction,
-        interaction: RepliableInteraction
+        interaction: InteractionForAction<'cached'>
     ): RegisterForChampionshipActionExecutionContext {
         return new RegisterForChampionshipActionExecutionContext(client, RegisterForChampionshipAction, input, interaction);
     }

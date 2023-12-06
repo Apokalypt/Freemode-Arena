@@ -13,7 +13,7 @@ import type {
 import type { APIActionRowComponent, APIModalActionRowComponent, } from "discord-api-types/payloads/v10/channel";
 import type { BotClient } from "@models/BotClient";
 import type { ActionCodes } from "@enums";
-import type { WithoutModifiers, Nullish } from "@bot-types";
+import type { WithoutModifiers, Nullish, InteractionForAction } from "@bot-types";
 import {
     ButtonStyle,
     ComponentType,
@@ -78,11 +78,11 @@ export class Action<Type extends ActionCodes = ActionCodes> {
         this.once = data.once;
     }
 
-    public async startFromObject(client: BotClient, source: RepliableInteraction): Promise<void> {
+    public async startFromObject(client: BotClient, source: InteractionForAction): Promise<void> {
         return this._execute(client, source);
     }
 
-    public static fromInteractionId(interaction: RepliableInteraction): Action {
+    public static fromInteractionId(interaction: InteractionForAction): Action {
         if (!interaction.isMessageComponent()) {
             throw new ActionNotSerializableException();
         }
@@ -182,9 +182,12 @@ export class Action<Type extends ActionCodes = ActionCodes> {
     }
 
 
-    private async _execute(client: BotClient, source: RepliableInteraction) {
-        const context = this._getContext(client, this._getInput(), source);
-        await context.process();
+    private async _execute(client: BotClient, source: InteractionForAction) {
+        if (!source.inCachedGuild()) {
+            throw new NotSupportedException();
+        }
+
+        return this._getContext(client, this._getInput(), source).process();
     }
 
     protected _getInput(): InputAction<Type> {
@@ -199,7 +202,7 @@ export class Action<Type extends ActionCodes = ActionCodes> {
     protected _getContext(
         _client: BotClient,
         _input: InputAction<Type>,
-        _source: RepliableInteraction
+        _source: InteractionForAction<'cached'>
     ): ActionExecutionContext<false, InputAction<Type>, InputActionValidated<Type>, Type> {
         throw new NotSupportedException();
     }
@@ -231,7 +234,7 @@ export abstract class ActionExecutionContext<
 > {
     executed = false;
 
-    protected _interaction: RepliableInteraction;
+    protected _interaction: RepliableInteraction<'cached'>;
 
     public get __type(): Code {
         return this.input.__type;
@@ -241,7 +244,7 @@ export abstract class ActionExecutionContext<
         protected readonly _client: BotClient,
         protected readonly _action: typeof Action<Code>,
         public readonly input: IsValidated extends true ? InputValidated : Input,
-        protected readonly _source: RepliableInteraction
+        protected readonly _source: InteractionForAction<'cached'>
     ) {
         this._interaction = this._source;
     }

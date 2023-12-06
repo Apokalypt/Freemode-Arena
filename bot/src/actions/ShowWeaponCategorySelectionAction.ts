@@ -1,6 +1,6 @@
-import type { ButtonComponentData, RepliableInteraction } from "discord.js";
+import type { ButtonComponentData } from "discord.js";
 import type { BotClient } from "@models/BotClient";
-import type { WithoutModifiers } from "@bot-types";
+import type { WithoutModifiers, InteractionForAction } from "@bot-types";
 import { getDiscriminatorModelForClass } from "@typegoose/typegoose";
 import { ButtonStyle, ComponentType, StringSelectMenuComponentData } from "discord.js";
 import { MatchService } from "@services/MatchService";
@@ -26,7 +26,7 @@ export class ShowWeaponCategorySelectionAction extends Action<"ACTION_SHOW_WEAPO
     protected override _getContext(
         client: BotClient,
         input: InputShowWeaponCategorySelectionAction,
-        interaction: RepliableInteraction
+        interaction: InteractionForAction<'cached'>
     ): ShowWeaponCategorySelectionActionExecutionContext {
         return new ShowWeaponCategorySelectionActionExecutionContext(client,ShowWeaponCategorySelectionAction, input, interaction);
     }
@@ -51,12 +51,12 @@ class ShowWeaponCategorySelectionActionExecutionContext<IsValidated extends true
     protected async _execute(this:ShowWeaponCategorySelectionActionExecutionContext<true>): Promise<void> {
         await this._deferAnswer();
 
-        const participant = await ParticipantModel.findById(this._interaction?.user.id);
+        const participant = await ParticipantModel.findById(this._source.user.id);
         if (!participant) {
             throw new UserNotRegisteredException();
         }
 
-        const match = await MatchService.instance.getMatchFromDiscordChannel(this._interaction?.guildId!, this._interaction?.channelId!);
+        const match = await MatchService.instance.getMatchFromDiscordChannel(this._source.guildId, this._source.channelId);
         if (!match) {
             throw new UnknownMatchException();
         }

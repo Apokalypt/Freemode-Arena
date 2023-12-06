@@ -14,9 +14,11 @@ import {
     PropertyNotInjectableFromInteraction
 } from "@models/action/ActionPropertySerialization";
 import { ValidateWeaponsSelectionAction } from "./ValidateWeaponsSelectionAction";
-import { UserNotRegisteredException } from "@exceptions/championship/UserNotRegisteredException";
+import { ShowWeaponCategorySelectionAction } from "./ShowWeaponCategorySelectionAction";
 import { UnknownMatchException } from "@exceptions/championship/UnknownMatchException";
 import { UnknownPlayerException } from "@exceptions/championship/UnknownPlayerException";
+import { UserNotRegisteredException } from "@exceptions/championship/UserNotRegisteredException";
+import { InvalidPlayerStateException } from "@exceptions/championship/InvalidPlayerStateException";
 
 type UpdateWeaponsSelectionActionProperties = WithoutModifiers<UpdateWeaponsSelectionAction>;
 
@@ -105,7 +107,13 @@ class UpdateWeaponsSelectionActionExecutionContext<IsValidated extends true | fa
     }
 
     protected async _execute(this:UpdateWeaponsSelectionActionExecutionContext<true>): Promise<void> {
-        await this._deferAnswer();
+        if (this._source.message.flags.has("Ephemeral")) {
+            // We are navigating through the menu, we don't want to send new messages each time but just update the
+            // previous one to offer a better user experience.
+            await this._source.deferUpdate();
+        } else {
+            await this._source.deferReply({ ephemeral: true });
+        }
 
         const participant = await ParticipantModel.findById(this._source.user.id);
         if (!participant) {
@@ -120,6 +128,10 @@ class UpdateWeaponsSelectionActionExecutionContext<IsValidated extends true | fa
         const player = match.players.find( p => p.participantId === participant._id );
         if (!player) {
             throw new UnknownPlayerException();
+        }
+
+        if (player.weapons.validatedAt != null) {
+            throw new InvalidPlayerStateException("Vous avez déjà validé votre sélection d'armes et ne pouvez plus la modifier!");
         }
 
         const category = MatchService.instance.updatePlayerSelectionOnCategory(this.input.categoryId, this.input.weaponIds, player);
@@ -141,10 +153,19 @@ class UpdateWeaponsSelectionActionExecutionContext<IsValidated extends true | fa
         const action = new UpdateWeaponsSelectionAction({ categoryId: this.input.categoryId });
         this._client.actions.linkComponentToAction(weaponsSelectMenu, action, "weaponIds");
 
+        const backToCategoriesButton: ButtonComponentData = {
+            type: ComponentType.Button,
+            style: ButtonStyle.Primary,
+            customId: "dummy-back-to-categories",
+            label: "Retour aux catégories"
+        };
+        const actionToBackToCategories = new ShowWeaponCategorySelectionAction({ });
+        this._client.actions.linkComponentToAction(backToCategoriesButton, actionToBackToCategories);
+
         const validationButton: ButtonComponentData = {
             type: ComponentType.Button,
             style: ButtonStyle.Success,
-            customId: "dummy",
+            customId: "dummy-validate-selection",
             label: "Valider la sélection"
         };
         const actionToValidate = new ValidateWeaponsSelectionAction({ });
@@ -158,10 +179,8 @@ class UpdateWeaponsSelectionActionExecutionContext<IsValidated extends true | fa
                 .join("\n") + "\n";
         }
 
-        await this._answer({
-            content: "## Sélection des armes\n" +
-                "** **\n" +
-                `### Sélection actuelle ( ${player.weapons.selectionCost} / ${player.weapons.budget} )\n` +
+        await this._source.editReply({
+            content: `### Armes sélectionnées ( ${player.weapons.selectionCost} / ${player.weapons.budget} )\n` +
                 actualSelectionSection +
                 "\n" +
                 "\n" +
@@ -176,6 +195,7 @@ class UpdateWeaponsSelectionActionExecutionContext<IsValidated extends true | fa
                 {
                     type: ComponentType.ActionRow,
                     components: [
+                        backToCategoriesButton,
                         validationButton
                     ]
                 }

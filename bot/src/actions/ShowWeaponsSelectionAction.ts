@@ -8,11 +8,13 @@ import { ParticipantModel } from "@models/championship/Participant";
 import { PropertyInjectableFromInteraction } from "@models/action/ActionPropertySerialization";
 import { UpdateWeaponsSelectionAction } from "./UpdateWeaponsSelectionAction";
 import { ValidateWeaponsSelectionAction } from "./ValidateWeaponsSelectionAction";
+import { ShowWeaponCategorySelectionAction } from "./ShowWeaponCategorySelectionAction";
 import { Action, ActionExecutionContext, ActionModel, InputAction, InputActionValidated } from "@models/action/Action";
 import { UnknownMatchException } from "@exceptions/championship/UnknownMatchException";
 import { InvalidActionException } from "@exceptions/actions/InvalidActionException";
 import { UnknownPlayerException } from "@exceptions/championship/UnknownPlayerException";
 import { UserNotRegisteredException } from "@exceptions/championship/UserNotRegisteredException";
+import { InvalidPlayerStateException } from "@exceptions/championship/InvalidPlayerStateException";
 import { ACTION_CODES, DATABASE_MODELS } from "@enums";
 import { IntermediateModel } from "@decorators/database";
 
@@ -66,7 +68,13 @@ class ShowWeaponsSelectionActionExecutionContext<IsValidated extends true | fals
     }
 
     protected async _execute(this:ShowWeaponsSelectionActionExecutionContext<true>): Promise<void> {
-        await this._deferAnswer();
+        if (this._source.message.flags.has("Ephemeral")) {
+            // We are navigating through the menu, we don't want to send new messages each time but just update the
+            // previous one to offer a better user experience.
+            await this._source.deferUpdate();
+        } else {
+            await this._source.deferReply({ ephemeral: true });
+        }
 
         const participant = await ParticipantModel.findById(this._source.user.id);
         if (!participant) {
@@ -81,6 +89,10 @@ class ShowWeaponsSelectionActionExecutionContext<IsValidated extends true | fals
         const player = match.players.find( p => p.participantId === participant._id );
         if (!player) {
             throw new UnknownPlayerException();
+        }
+
+        if (player.weapons.validatedAt != null) {
+            throw new InvalidPlayerStateException("Vous avez déjà validé votre sélection d'armes et ne pouvez plus la modifier!");
         }
 
         let actualSelectionSection: string;
@@ -109,6 +121,15 @@ class ShowWeaponsSelectionActionExecutionContext<IsValidated extends true | fals
         const action = new UpdateWeaponsSelectionAction({ categoryId: this.input.categoryId });
         this._client.actions.linkComponentToAction(weaponsSelectMenu, action, "weaponIds");
 
+        const backToCategoriesButton: ButtonComponentData = {
+            type: ComponentType.Button,
+            style: ButtonStyle.Primary,
+            customId: "dummy-back-to-categories",
+            label: "Retour aux catégories"
+        };
+        const actionToBackToCategories = new ShowWeaponCategorySelectionAction({ });
+        this._client.actions.linkComponentToAction(backToCategoriesButton, actionToBackToCategories);
+
         const validationButton: ButtonComponentData = {
             type: ComponentType.Button,
             style: ButtonStyle.Success,
@@ -118,14 +139,12 @@ class ShowWeaponsSelectionActionExecutionContext<IsValidated extends true | fals
         const actionToValidate = new ValidateWeaponsSelectionAction({ });
         this._client.actions.linkComponentToAction(validationButton, actionToValidate);
 
-        await this._answer({
-            content: "## Sélection des armes\n" +
-                "** **\n" +
-                `### Sélection actuelle ( ${player.weapons.selectionCost} / ${player.weapons.budget} )\n` +
+        await this._source.editReply({
+            content: `### Armes sélectionnées ( ${player.weapons.selectionCost} / ${player.weapons.budget} )\n` +
                 actualSelectionSection +
                 "\n" +
                 "\n" +
-                ":rightarrow: Veuillez sélectionner la catégorie de l'arme que vous souhaitez sélectionner :arrow_heading_down:",
+                ":rightarrow: Veuillez sélectionner les armes de cette catégorie :arrow_heading_down:",
             components: [
                 {
                     type: ComponentType.ActionRow,
@@ -136,11 +155,12 @@ class ShowWeaponsSelectionActionExecutionContext<IsValidated extends true | fals
                 {
                     type: ComponentType.ActionRow,
                     components: [
+                        backToCategoriesButton,
                         validationButton
                     ]
                 }
             ]
-        })
+        });
     }
 }
 

@@ -11,7 +11,8 @@ export class InvalidPlayerStateException extends Exception {
     constructor(reason: string) {
         super(
             EXCEPTION_CODES.CHAMPIONSHIP_INVALID_PLAYER_STATE,
-            `Vous ne pouvez pas effectuer cette action car vous êtes dans un état invalide : ${reason}`,
+            "Vous ne pouvez pas effectuer cette action car vous êtes dans un état invalide.\n\n" +
+                `**Raison**: ${reason}`,
             COLOR_ERROR
         );
     }

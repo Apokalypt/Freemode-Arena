@@ -67,6 +67,9 @@ class ValidateWeaponsSelectionActionExecutionContext<IsValidated extends true | 
         if (player.weapons.selection.length === 0) {
             throw new InvalidPlayerStateException("Vous n'avez sélectionné aucune arme.");
         }
+        if (player.weapons.validatedAt != null) {
+            throw new InvalidPlayerStateException("Vous avez déjà validé votre sélection d'armes et ne pouvez plus la modifier!");
+        }
 
         const isSure = await this._askForBinaryChoice(
             "Êtes-vous sûr de vouloir valider votre sélection d'armes ?",
@@ -91,15 +94,26 @@ class ValidateWeaponsSelectionActionExecutionContext<IsValidated extends true | 
 
             await thread.send({
                 content: "Les deux joueurs ont validé leur sélection d'armes. Voici les armes sélectionnées par chacun d'eux:",
-                embeds: match.players.map( p => {
-                    return {
-                        title: `<@${p.participantId}>`,
-                        description: p.weapons.selection.map( w => `- ${w.name}`)
-                            .join("\n")
-                    }
-                })
+                embeds: await Promise.all(
+                    match.players.map( async p => {
+                        const user = await this._client.discord.users.fetch(p.participantId)
+                            .catch( _ => null );
+
+                        return {
+                            title: `${user?.displayName}`,
+                            description: p.weapons.selection.map( w => `- ${w.name}`)
+                                .join("\n")
+                        };
+                    })
+                )
+            }).catch( _ => null );
+
+            const mention = match.players.map( p => `<@${p.participantId}>` ).join(" ");
+
+            await thread.send({
+                content: `Vous pouvez désormais commencer le match! ${mention}\n` +
+                    "Mettez-vous d'accord sur un horaire puis rendez-vous sur la carte indiquée au début du fil de discussion."
             })
-                .catch(_ => null)
         });
 
         await this._answer({

@@ -39,13 +39,14 @@ export = new MessageContextMenuCommand(
             url: `https://discord.com/channels/${interaction.guildId}/${FAQ_CHANNEL_ID}`
         };
 
-        await interaction.reply({
+        await interaction.targetMessage.reply({
             content: "## Intéressé par Freemode Arena ? Inscris-toi :arrow_heading_down:",
             components: [
                 { type: ComponentType.ActionRow, components: [registerButton, faqButton] }
-            ],
-            ephemeral: false
+            ]
         });
+
+        await interaction.reply({ content: "Message envoyé !", ephemeral: true });
     },
     PermissionFlagsBits.ManageMessages
 );

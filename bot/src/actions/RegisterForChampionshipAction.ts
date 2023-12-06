@@ -127,7 +127,7 @@ class RegisterForChampionshipActionExecutionContext<IsValidated extends true | f
 
         await this._answer({
             embeds: [{
-                title: "Inscription au championnat validé",
+                title: "Inscription au championnat validée",
                 description: "Vous êtes maintenant inscrit au championnat!\n" +
                     `Vous pouvez désormais rechercher un adversaire dans le salon <#${CHAMPIONSHIP_CHANNEL_ID}>`,
                 color: 0x00ff00
@@ -145,7 +145,7 @@ class RegisterForChampionshipActionExecutionContext<IsValidated extends true | f
                             .setLabel("Rechercher un adversaire")
                     ])
             ],
-            ephemeral: true,
+            ephemeral: true
         });
     }
 }

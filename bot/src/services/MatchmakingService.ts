@@ -1,10 +1,11 @@
-import { MATCHMAKING_TICKET_STATUS, PLATFORMS, Platforms } from "@enums";
-import { Participant } from "@models/championship/Participant";
-import { MatchModel } from "@models/championship/Match";
+import type { Guild } from "discord.js";
+import { MATCHMAKING_TICKET_STATUS, Platforms, PLATFORMS_ROLES } from "@enums";
 import {
     MatchmakingTicketDocument,
     MatchmakingTicketModel
 } from "@models/championship/MatchmakingTicket";
+import { MatchModel } from "@models/championship/Match";
+import { Participant } from "@models/championship/Participant";
 
 export class MatchmakingService {
     private static _instance: MatchmakingService;
@@ -41,8 +42,10 @@ export class MatchmakingService {
         });
     }
 
-    public async getUserPlatforms(player: Participant): Promise<Platforms[]> {
-        // TODO
-        return [PLATFORMS.PC];
+    public async getUserPlatforms(guild: Guild, player: Participant): Promise<Platforms[]> {
+        const member = await guild.members.fetch(player._id);
+
+        return PLATFORMS_ROLES.filter( conf => member.roles.cache.has(conf.role) )
+            .map( conf => conf.platform );
     }
 }

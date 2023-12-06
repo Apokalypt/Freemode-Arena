@@ -47,7 +47,7 @@ const sc_RegisterChampionshipCommand = new SubSlashCommandOption(
             customId: "dummy-1"
         };
         const action = new RegisterForChampionshipAction({ });
-        client.actions.linkComponentToAction(action, inscriptionButton);
+        await client.actions.linkComponentToAction(action, inscriptionButton);
 
         await channel.send({
             content: "# Freemode Arena - Saison 4\n" +
@@ -117,7 +117,7 @@ const sc_MatchmakingChampionshipCommand = new SubSlashCommandOption(
             customId: "dummy-1"
         };
         const action = new SearchOpponentChampionshipAction({ });
-        client.actions.linkComponentToAction(action, matchmakingButton);
+        await client.actions.linkComponentToAction(action, matchmakingButton);
 
         await channel.send({
             content: "# Trouver un adversaire pour faire des points\n" +

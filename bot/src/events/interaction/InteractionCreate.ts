@@ -39,7 +39,7 @@ export = new Event(
                 }
 
                 await command.autocomplete(client, interaction);
-            } else if (interaction.isButton()) {
+            } else if (interaction.isButton() || interaction.isStringSelectMenu()) {
                 const [actionIdOrTypeOrMissing, actionType,] = interaction.customId.split(SEPARATOR_PROPERTY_INTERACTION_ID);
 
                 const modelName = MAPPING_ACTION_CODES_MODELS[actionIdOrTypeOrMissing] ?? MAPPING_ACTION_CODES_MODELS[actionType];

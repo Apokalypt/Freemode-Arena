@@ -1,15 +1,14 @@
 import { EmbeddedModel, RequiredProp } from "@decorators/database";
 
 @EmbeddedModel()
-export class MatchMap {
+export class InGameWeapon {
     @RequiredProp({ type: String })
     public name!: string;
+    @RequiredProp({ type: Number })
+    public cost!: number;
 
-    @RequiredProp({ type: String })
-    public url!: string;
-
-    constructor(name: string, url: string) {
+    constructor(name: string, cost: number) {
         this.name = name;
-        this.url = url;
+        this.cost = cost;
     }
 }

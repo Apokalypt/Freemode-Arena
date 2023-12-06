@@ -400,7 +400,7 @@ export abstract class ActionExecutionContext<
         await this._client.utils.sendInteractionAnswer(this._interaction, content);
     }
 
-    protected async _askForBinaryChoice(messageContent: string) {
+    protected async _askForBinaryChoice(messageContent: string, labels?: BinaryChoiceLabels): Promise<boolean> {
         const idNo = `local-${v4()}-no`;
         const idYes = `local-${v4()}-tes`;
 
@@ -413,13 +413,13 @@ export abstract class ActionExecutionContext<
                         {
                             type: ComponentType.Button,
                             style: ButtonStyle.Danger,
-                            label: "Non",
+                            label: labels?.no ?? "Non",
                             custom_id: idNo
                         },
                         {
                             type: ComponentType.Button,
                             style: ButtonStyle.Success,
-                            label: "Oui",
+                            label: labels?.yes ?? "Oui",
                             custom_id: idYes
                         }
                     ]
@@ -743,3 +743,5 @@ type MultiTextAsked = Record<string, TextInputAskedData>;
 type MultiTextAskedOutput<T extends MultiTextAsked> = {
     [K in keyof T]: T[K]["required"] extends true ? string : string | null;
 };
+
+interface BinaryChoiceLabels { yes: string; no: string }

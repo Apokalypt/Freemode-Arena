@@ -1,14 +1,17 @@
-import { getDiscriminatorModelForClass } from "@typegoose/typegoose";
 import type { RepliableInteraction } from "discord.js";
 import type { BotClient } from "@models/BotClient";
 import type { WithoutModifiers } from "@bot-types";
+import { getDiscriminatorModelForClass } from "@typegoose/typegoose";
 import { Action, ActionExecutionContext, ActionModel, InputAction, InputActionValidated } from "@models/action/Action";
 import { IntermediateModel } from "@decorators/database";
-import { InvalidActionException } from "@exceptions/actions/InvalidActionException";
-import { ACTION_CODES, DATABASE_MODELS, Platforms } from "@enums";
+import { MatchService } from "@services/MatchService";
 import { MatchmakingService } from "@services/MatchmakingService";
 import { ParticipantModel } from "@models/championship/Participant";
-import { MatchService } from "@services/MatchService";
+import { InvalidActionException } from "@exceptions/actions/InvalidActionException";
+import { UserNotRegisteredException } from "@exceptions/championship/UserNotRegisteredException";
+import { InvalidPlayerStateException } from "@exceptions/championship/InvalidPlayerStateException";
+import { MatchmakingInProgressException } from "@exceptions/championship/MatchmakingInProgressException";
+import { ACTION_CODES, DATABASE_MODELS, Platforms } from "@enums";
 
 type SearchOpponentChampionshipActionProperties = WithoutModifiers<SearchOpponentChampionshipAction>;
 
@@ -48,27 +51,37 @@ class SearchOpponentChampionshipActionExecutionContext<IsValidated extends true 
 
         const participant = await ParticipantModel.findById(this._interaction?.user.id);
         if (!participant) {
-            throw new InvalidActionException("Vous devez vous inscrire au tournoi pour pouvoir lancer une recherche d'adversaire.");
+            throw new UserNotRegisteredException();
         }
 
-        const platform = await this._askForStringSelection({
-            title: "Sur quelle plateforme souhaitez-vous jouer?",
-            description: "Choisissez la plateforme sur laquelle vous souhaitez jouer ce match. La sélection concernera " +
-                "uniquement ce match donc vous pourrez lancer une recherche sur une autre plateforme juste après.",
-            options: await MatchmakingService.instance.getUserPlatforms(participant)
-                .then( platforms => platforms.map( platform => ({ label: platform, value: platform }) ) ),
-            placeholder: "Cliquez ici pour choisir une plateforme...",
-            minNumberOfOptions: 1,
-            maxNumberOfOptions: 1
-        }) as Platforms;
+        const guild = await this._getGuild(true);
+        const userPlatforms = await MatchmakingService.instance.getUserPlatforms(guild, participant);
+        if (userPlatforms.length === 0) {
+            throw new InvalidPlayerStateException("Vous n'avez pas sélectionné de plateforme dans <id:customize>.")
+        }
+
+        let platform: Platforms;
+        if (userPlatforms.length === 1) {
+            platform = userPlatforms[0];
+        } else {
+            platform = await this._askForStringSelection({
+                title: "Sur quelle plateforme souhaitez-vous jouer?",
+                description: "Choisissez la plateforme sur laquelle vous souhaitez jouer ce match. La sélection concernera " +
+                    "uniquement ce match donc vous pourrez lancer une recherche sur une autre plateforme juste après.",
+                options: userPlatforms.map( platform => ({ label: platform, value: platform }) ),
+                placeholder: "Cliquez ici pour choisir une plateforme...",
+                minNumberOfOptions: 1,
+                maxNumberOfOptions: 1
+            }) as Platforms;
+        }
 
         const ticket = await MatchmakingService.instance.searchTicket(platform, participant);
         if (ticket) {
             if (ticket.participantId === participant._id) {
-                throw new InvalidActionException("Vous avez déjà créé un ticket de matchmaking pour cette plateforme.");
+                throw new MatchmakingInProgressException(platform);
             }
 
-            const match = await MatchService.instance.createMatchFromTicket(this._interaction!.guild!, ticket, participant);
+            const match = await MatchService.instance.createMatchFromTicket(this._client, this._interaction!.guild!, ticket, participant);
 
             await this._answer({
                 content: "Nous vous avons trouvé un adversaire!\n" +
@@ -82,7 +95,7 @@ class SearchOpponentChampionshipActionExecutionContext<IsValidated extends true 
                 content: `Vous avez été ajouté à la liste d\'attente sur la plateforme ${platform}.\n` +
                     'Vous serez notifié dès qu\'un adversaire sera disponible :thumbsup:',
                 ephemeral: true
-            })
+            });
         }
     }
 }

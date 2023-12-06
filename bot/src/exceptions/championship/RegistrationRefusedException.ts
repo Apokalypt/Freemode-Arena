@@ -10,7 +10,7 @@ export class RegistrationRefusedException extends Exception {
     constructor(reason: string) {
         super(
             EXCEPTION_CODES.CHAMPIONSHIP_REGISTRATION_REFUSED,
-            `Vou n'êtes pas autorisé à vous inscrire au championnat.\n\n**Raison :** ${reason}`,
+            `Vous n'êtes pas autorisé à vous inscrire au championnat.\n\n**Raison :** ${reason}`,
             COLOR_ERROR
         );
     }

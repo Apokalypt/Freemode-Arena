@@ -5,7 +5,7 @@ import type { ActionDocument } from "@models/action/Action";
 import type { Action } from "@models/action/Action";
 import { UnknownException } from "@exceptions/UnknownException";
 import { ActionPropertyNotSerializableException } from "@exceptions/actions/ActionPropertyNotSerializableException";
-import { InteractionButtonComponentData } from "discord.js";
+import { InteractionButtonComponentData, StringSelectMenuComponentData } from "discord.js";
 import { DISCORD_COMPONENT_CUSTOM_ID_MAX_LENGTH } from "@constants";
 
 export class ActionsManager {
@@ -24,7 +24,7 @@ export class ActionsManager {
         await action.deleteOne();
     }
 
-    public async linkComponentToAction<T extends Action>(action: T, component: InteractionButtonComponentData, nameMissingProperty?: string) {
+    public async linkComponentToAction<T extends Action>(action: T, component: StringSelectMenuComponentData | InteractionButtonComponentData, nameMissingProperty?: string) {
         try {
             const customId = action.generateInteractionId(nameMissingProperty);
             if (customId.length > DISCORD_COMPONENT_CUSTOM_ID_MAX_LENGTH) {

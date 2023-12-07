@@ -1,6 +1,6 @@
 import type { BotClient } from "@models/BotClient";
 import type { WithoutModifiers, InteractionForAction } from "@bot-types";
-import { APIButtonComponentWithCustomId, ButtonStyle, ChannelType, ComponentType } from "discord.js";
+import { APIButtonComponentWithCustomId, ButtonStyle, ChannelType, ComponentType, EmbedBuilder } from "discord.js";
 import { getDiscriminatorModelForClass } from "@typegoose/typegoose";
 import { Action, ActionExecutionContext, ActionModel, InputAction, InputActionValidated } from "@models/action/Action";
 import { IntermediateModel } from "@decorators/database";
@@ -13,6 +13,7 @@ import { InvalidActionException } from "@exceptions/actions/InvalidActionExcepti
 import { UnknownPlayerException } from "@exceptions/championship/UnknownPlayerException";
 import { UserNotRegisteredException } from "@exceptions/championship/UserNotRegisteredException";
 import { InvalidPlayerStateException } from "@exceptions/championship/InvalidPlayerStateException";
+import { EMOJI_MATCHMAKING, FAQ_CHANNEL_ID } from "@constants";
 
 type ValidateWeaponsSelectionActionProperties = WithoutModifiers<ValidateWeaponsSelectionAction>;
 
@@ -79,7 +80,10 @@ class ValidateWeaponsSelectionActionExecutionContext<IsValidated extends true | 
         }
 
         const isSure = await this._askForBinaryChoice(
-            "Êtes-vous sûr de vouloir valider votre sélection d'armes ?",
+            "## Sélection actuelle\n" +
+                `${player.weapons.stringifySelection()}\n` +
+                "\n" +
+                "Êtes-vous sûr de vouloir valider votre sélection ? *Vous ne pourrez plus la modifier par la suite.*",
             { yes: "Valider", no: "Continuer à la modifier" }
         );
         if (!isSure) {
@@ -100,27 +104,33 @@ class ValidateWeaponsSelectionActionExecutionContext<IsValidated extends true | 
             }
 
             await thread.send({
-                content: "Les deux joueurs ont validé leur sélection d'armes. Voici les armes sélectionnées par chacun d'eux:",
-                embeds: await Promise.all(
-                    match.players.map( async p => {
-                        const user = await this._client.discord.users.fetch(p.participantId)
-                            .catch( _ => null );
-
-                        return {
-                            title: `${user?.displayName}`,
-                            description: p.weapons.selection.map( w => `- ${w.name}`)
-                                .join("\n")
-                        };
-                    })
-                )
+                content: "# Le match peut commencer!\n" +
+                    "** **\n" +
+                    "## Sélections\n" +
+                    `### - <@${match.players[0].participantId}>\n` +
+                    `${match.players[0].weapons.stringifySelection()}` +
+                    `### - <@${match.players[1].participantId}>\n` +
+                    `${match.players[1].weapons.stringifySelection()}\n` +
+                    `<:white_right_arrow:1182354037346148482> À vous de convenir d'une date pour effectuer votre match ${EMOJI_MATCHMAKING}`,
+                embeds: [
+                    new EmbedBuilder()
+                        .setTitle("Lieu du match")
+                        .setImage(match.map.url)
+                ],
+                components: [
+                    {
+                        type: ComponentType.ActionRow,
+                        components: [
+                            {
+                                type: ComponentType.Button,
+                                style: ButtonStyle.Link,
+                                label: "Règlement + FAQ",
+                                url: `https://discord.com/channels/${thread.guildId}/${FAQ_CHANNEL_ID}`
+                            }
+                        ]
+                    }
+                ]
             }).catch( _ => null );
-
-            const mention = match.players.map( p => `<@${p.participantId}>` ).join(" ");
-
-            await thread.send({
-                content: `Vous pouvez désormais commencer le match! ${mention}\n` +
-                    "Mettez-vous d'accord sur un horaire puis rendez-vous sur la carte indiquée au début du fil de discussion."
-            })
         });
 
         const buttonToSelectWeapons: APIButtonComponentWithCustomId = {

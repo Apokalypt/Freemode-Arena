@@ -22,9 +22,19 @@ export class MatchPlayerWeapons {
 
     public stringifyStatus() {
         if (this.validatedAt == null) {
-            return ":hourglass: - Non Validé";
+            return ":hourglass: - Non Validée";
         } else {
-            return ":white_check_mark: - Validé";
+            return "<a:green_check_circle:1182354698804666378> - Validée";
+        }
+    }
+    public stringifySelection() {
+        if (this.selection.length === 0) {
+            return "*Aucune arme sélectionnée pour le moment*\n";
+        } else {
+            const INDENT = "\u200b ".repeat(5);
+
+            return this.selection.map( weapon => `${INDENT} • ${weapon.toString()}` )
+                .join('\n') + "\n";
         }
     }
 }

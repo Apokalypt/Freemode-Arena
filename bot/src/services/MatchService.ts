@@ -3,7 +3,7 @@ import { isDocument } from "@typegoose/typegoose";
 import {
     ButtonStyle,
     ChannelType,
-    ComponentType,
+    ComponentType, EmbedBuilder,
     Guild,
     InteractionButtonComponentData,
     type InteractionReplyOptions
@@ -102,7 +102,10 @@ export class MatchService {
                 "6. Les organisateurs vérifient le match et saisissent le score des joueurs\n" +
                 "\n" +
                 "## Où faire le match ?\n" +
-                `Le match doit se faire sur la carte suivante: ${map.url}`,
+                `Le match doit se faire sur la carte suivante:`,
+            embeds: [
+                new EmbedBuilder().setImage(map.url)
+            ],
             components: [
                 {
                     type: ComponentType.ActionRow,
@@ -178,22 +181,14 @@ export class MatchService {
     }
 
     public buildPlayerMenu(player: MatchPlayer, title: string, footer: string, components: APIActionRowComponent<APIMessageActionRowComponent>[]): InteractionReplyOptions {
-        const INDENT = "\u200b ".repeat(5);
 
         let content = `# ${title}\n` +
             "\n" +
             "## Status\n" +
             `${player.weapons.stringifyStatus()}\n` +
-            `## Sélection - ${player.weapons.selectionCost} / ${player.weapons.budget} jetons\n`;
-
-        if (player.weapons.selection.length === 0) {
-            content += "*Aucune arme sélectionnée pour le moment*\n";
-        } else {
-            content += player.weapons.selection.map( weapon => `${INDENT} • ${weapon.toString()}` )
-                .join('\n') + "\n";
-        }
-
-        content += "\n" +
+            `## Sélection - ${player.weapons.selectionCost} / ${player.weapons.budget} jetons\n` +
+            `${player.weapons.stringifySelection()}\n` +
+            "\n" +
             `### ${footer} :arrow_heading_down:`;
 
         return { content, components };

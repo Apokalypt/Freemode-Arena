@@ -641,7 +641,7 @@ export abstract class ActionExecutionContext<
             .flat()
             .filter( c => c ) ?? [];
 
-        const message = await this._client.utils.sendInteractionAnswer(oldInteraction, data);
+        const message = await this._client.utils.sendInteractionAnswer(oldInteraction, { ...data, fetchReply: true });
         const interaction = await message.awaitMessageComponent({
             filter: (i) => i.user.id === oldInteraction.user.id && ids.includes(i.customId),
             componentType: options.componentType,

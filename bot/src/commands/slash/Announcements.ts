@@ -11,6 +11,7 @@ import { SubSlashCommandOption } from "@models/command/options/executable/SubSla
 import { RegisterForChampionshipAction } from "../../actions/RegisterForChampionshipAction";
 import { SearchOpponentChampionshipAction } from "../../actions/SearchOpponentChampionshipAction";
 import { InvalidActionException } from "@exceptions/actions/InvalidActionException";
+import { EMOJI_FAQ, EMOJI_MATCHMAKING, FAQ_CHANNEL_ID } from "@constants";
 
 /**
  * [SUB-COMMAND] - Event registering
@@ -72,7 +73,16 @@ const sc_RegisterChampionshipCommand = new SubSlashCommandOption(
             components: [
                 {
                     type: ComponentType.ActionRow,
-                    components: [inscriptionButton]
+                    components: [
+                        inscriptionButton,
+                        {
+                            type: ComponentType.Button,
+                            style: ButtonStyle.Link,
+                            label: "Règlement + FAQ",
+                            url: `https://discord.com/channels/${channel.guildId}/${FAQ_CHANNEL_ID}`,
+                            emoji: EMOJI_FAQ
+                        }
+                    ]
                 }
             ]
         });
@@ -114,7 +124,8 @@ const sc_MatchmakingChampionshipCommand = new SubSlashCommandOption(
             type: ComponentType.Button,
             style: ButtonStyle.Primary,
             label: "Chercher un adversaire",
-            customId: "dummy-1"
+            customId: "dummy-1",
+            emoji: EMOJI_MATCHMAKING
         };
         const action = new SearchOpponentChampionshipAction({ });
         client.actions.linkComponentToAction(matchmakingButton, action);
@@ -132,11 +143,20 @@ const sc_MatchmakingChampionshipCommand = new SubSlashCommandOption(
                 "  - Planifiez votre match\n" +
                 "  - Validez votre enregistrement\n" +
                 "\n" +
-                ":arrow: N'attends plus et clique sur \"Chercher un adversaire\" !",
+                "<:white_right_arrow:1182354037346148482> N'attends plus et clique sur \"Chercher un adversaire\" !",
             components: [
                 {
                     type: ComponentType.ActionRow,
-                    components: [matchmakingButton]
+                    components: [
+                        matchmakingButton,
+                        {
+                            type: ComponentType.Button,
+                            style: ButtonStyle.Link,
+                            label: "Règlement + FAQ",
+                            url: `https://discord.com/channels/${channel.guildId}/${FAQ_CHANNEL_ID}`,
+                            emoji: EMOJI_FAQ
+                        }
+                    ]
                 }
             ],
             files: [

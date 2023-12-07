@@ -2,12 +2,15 @@ import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { getModelForClass, DocumentType, Prop } from "@typegoose/typegoose";
 import { DiscordChannel } from "@models/championship/DiscordChannel";
 import { Model, RequiredProp } from "@decorators/database";
-import { DATABASE_COLLECTIONS, DATABASE_MODELS } from "@enums";
+import { DATABASE_COLLECTIONS, DATABASE_MODELS, Platforms, PLATFORMS_VALUES } from "@enums";
 
 @Model(DATABASE_COLLECTIONS.PARTICIPANTS, DATABASE_MODELS.PARTICIPANTS)
 export class Participant extends TimeStamps {
     @RequiredProp({ type: String })
     public _id!: string; // Discord ID
+
+    @RequiredProp({ type: String, enum: PLATFORMS_VALUES })
+    public platform!: Platforms;
 
     @RequiredProp({ type: Number, validate: (value: number) => value === 0 || value === 1 || value === 2, default: 0 })
     public level!: 0 | 1 | 2; // User estimation level

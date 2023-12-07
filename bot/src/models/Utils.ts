@@ -1,10 +1,4 @@
-import type {
-    BooleanCache,
-    CacheType,
-    InteractionReplyOptions,
-    InteractionResponse, Message,
-    RepliableInteraction
-} from "discord.js";
+import type { BooleanCache, CacheType, InteractionReplyOptions, Message, RepliableInteraction } from "discord.js";
 import type { BotClient } from "@models/BotClient";
 
 export class Utils {
@@ -21,9 +15,9 @@ export class Utils {
         interaction: RepliableInteraction<Cached>,
         data: InteractionReplyOptions,
         options?: { forceEdit?: boolean }
-    ): Promise<InteractionResponse<BooleanCache<Cached>> | Message<BooleanCache<Cached>>> {
+    ): Promise< Message<BooleanCache<Cached>> > {
         if (!interaction.replied && !interaction.deferred) {
-            return interaction.reply(data);
+            return interaction.reply({ ...data, fetchReply: true });
         } else if (interaction.replied && options?.forceEdit) {
             return interaction.editReply(data);
         } else {

@@ -1,17 +1,25 @@
-import { getDiscriminatorModelForClass } from "@typegoose/typegoose";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType } from "discord.js";
 import type { BotClient } from "@models/BotClient";
 import type { WithoutModifiers, InteractionForAction } from "@bot-types";
+import { ThreadAutoArchiveDuration } from "discord-api-types/v10";
+import { getDiscriminatorModelForClass } from "@typegoose/typegoose";
+import { MessageActionRowComponentBuilder } from "@discordjs/builders";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType } from "discord.js";
+import { DiscordChannel } from "@models/championship/DiscordChannel";
+import { ParticipantDocument, ParticipantModel } from "@models/championship/Participant";
 import { Action, ActionExecutionContext, ActionModel, InputAction, InputActionValidated } from "@models/action/Action";
 import { IntermediateModel } from "@decorators/database";
+import { MatchmakingService } from "@services/MatchmakingService";
 import { InvalidActionException } from "@exceptions/actions/InvalidActionException";
-import { ACTION_CODES, DATABASE_MODELS } from "@enums";
-import { ParticipantDocument, ParticipantModel } from "@models/championship/Participant";
-import { CHAMPIONSHIP_CHANNEL_ID, CHAMPIONSHIP_ROLE_ID, SUPPORT_CHANNEL_ID, SUPPORT_ROLE_ID } from "@constants";
-import { ThreadAutoArchiveDuration } from "discord-api-types/v10";
-import { DiscordChannel } from "@models/championship/DiscordChannel";
+import { InvalidPlayerStateException } from "@exceptions/championship/InvalidPlayerStateException";
 import { RegistrationRefusedException } from "@exceptions/championship/RegistrationRefusedException";
-import { MessageActionRowComponentBuilder } from "@discordjs/builders";
+import { ACTION_CODES, DATABASE_MODELS, Platforms } from "@enums";
+import {
+    CHAMPIONSHIP_CHANNEL_ID,
+    CHAMPIONSHIP_ROLE_ID, EMOJI_FAQ, EMOJI_MATCHMAKING, EMOJI_SUPPORT,
+    FAQ_CHANNEL_ID,
+    SUPPORT_CHANNEL_ID,
+    SUPPORT_ROLE_ID
+} from "@constants";
 
 type RegisterForChampionshipActionProperties = WithoutModifiers<RegisterForChampionshipAction>;
 
@@ -47,8 +55,6 @@ class RegisterForChampionshipActionExecutionContext<IsValidated extends true | f
     }
 
     protected async _execute(this: RegisterForChampionshipActionExecutionContext<true>): Promise<void> {
-        await this._deferAnswer();
-
         const guild = await super._getGuild(true);
         const channel = await guild.channels.fetch(SUPPORT_CHANNEL_ID);
         if (!channel || channel.type !== ChannelType.GuildText) {
@@ -62,22 +68,9 @@ class RegisterForChampionshipActionExecutionContext<IsValidated extends true | f
             throw new RegistrationRefusedException("Vous êtes déjà inscrit au championnat.");
         }
 
-        const validateChoice = await this._askForBinaryChoice(
-            '## :crossed_swords: Vous êtes sur le point de vous inscrire à Freemode Arena 4, Souhaitez-vous continuer votre inscription ?\n' +
-            '** **\n' +
-            ':info: *En continuant, vous confirmez avoir lu le fonctionnement du tournoi et vous vous engagez à participer.*'
-        );
-        if (!validateChoice) {
-            await this._answer({
-                embeds: [{
-                    title: "Inscription au championnat",
-                    description: "Vous avez annulé votre inscription au championnat. Si vous changez d'avis, vous pouvez réessayer.",
-                    color: 0xff0000
-                }],
-                ephemeral: true
-            });
-
-            return;
+        const userPlatforms = await MatchmakingService.instance.getUserPlatforms(guild, user.id);
+        if (userPlatforms.length === 0) {
+            throw new InvalidPlayerStateException("Vous n'avez pas sélectionné de plateforme dans <id:customize>.")
         }
 
         const displayName = await this._askForText(
@@ -90,8 +83,22 @@ class RegisterForChampionshipActionExecutionContext<IsValidated extends true | f
             }
         );
 
+        let platform: Platforms;
+        if (userPlatforms.length === 1) {
+            platform = userPlatforms[0];
+        } else {
+            platform = await this._askForStringSelection({
+                title: "Sur quelle plateforme souhaitez-vous jouer?",
+                description: "Choisissez la plateforme sur laquelle vous souhaitez jouer ce championnat.",
+                options: userPlatforms.map( platform => ({ label: platform, value: platform }) ),
+                placeholder: "Cliquez ici pour choisir une plateforme...",
+                minNumberOfOptions: 1,
+                maxNumberOfOptions: 1
+            }) as Platforms;
+        }
+
         // We create the document first to avoid concurrency issues and check if the user is already registered
-        const participant: ParticipantDocument = await ParticipantModel.create({ _id: user.id, level: 0, displayName })
+        const participant: ParticipantDocument = await ParticipantModel.create({ _id: user.id, platform, level: 0, displayName })
             .catch( error => {
                 if (error.name === "MongoServerError" && error.code === 11000) {
                     throw new RegistrationRefusedException("Vous êtes déjà inscrit au championnat.");
@@ -112,37 +119,39 @@ class RegisterForChampionshipActionExecutionContext<IsValidated extends true | f
 
         await Promise.all([
             thread.send({
-                content: `# ${user}\n` +
+                content: `# Bonne chance ${user}\n` +
                     "** **\n" +
-                    ":accepter: Vous êtes maintenant inscrit à ``Freemode Arena - Saison 4``\n" +
+                    "<a:green_check_circle:1182354698804666378> Vous êtes maintenant inscrit à ``Freemode Arena - Saison 4``\n" +
                     "\n" +
                     `Ce salon vous permettra de communiquer avec les gérants du championnat ( <@&${SUPPORT_ROLE_ID}> ) dans le cas où vous auriez des questions ou des problèmes.\n` +
                     "\n" +
                     "## Ressources utiles\n" +
-                    `- Rechercher un adversaire :rightarrow: <#${CHAMPIONSHIP_CHANNEL_ID}>\n` +
-                    "- Règlement + FAQ :rightarrow: *??*"
+                    `- Rechercher un adversaire <:white_right_arrow:1182354037346148482> <#${CHAMPIONSHIP_CHANNEL_ID}>\n` +
+                    `- Règlement + FAQ <:white_right_arrow:1182354037346148482> <#${FAQ_CHANNEL_ID}>`
             }),
             user.roles.add(CHAMPIONSHIP_ROLE_ID)
         ]);
 
         await this._answer({
-            embeds: [{
-                title: "Inscription au championnat validée",
-                description: "Vous êtes maintenant inscrit au championnat!\n" +
-                    `Vous pouvez désormais rechercher un adversaire dans le salon <#${CHAMPIONSHIP_CHANNEL_ID}>`,
-                color: 0x00ff00
-            }],
+            content: "# Vous êtes maintenant inscrit à Freemode Arena 4",
             components: [
                 new ActionRowBuilder<MessageActionRowComponentBuilder>()
                     .addComponents([
                         new ButtonBuilder()
                             .setStyle(ButtonStyle.Link)
                             .setURL(`https://discord.com/channels/${channel.guildId}/${thread.id}`)
-                            .setLabel("Support"),
+                            .setLabel("Support")
+                            .setEmoji(EMOJI_SUPPORT),
                         new ButtonBuilder()
                             .setStyle(ButtonStyle.Link)
                             .setURL(`https://discord.com/channels/${channel.guildId}/${CHAMPIONSHIP_CHANNEL_ID}`)
                             .setLabel("Rechercher un adversaire")
+                            .setEmoji(EMOJI_MATCHMAKING),
+                        new ButtonBuilder()
+                            .setStyle(ButtonStyle.Link)
+                            .setURL(`https://discord.com/channels/${channel.guildId}/${FAQ_CHANNEL_ID}`)
+                            .setLabel("Règlement + FAQ")
+                            .setEmoji(EMOJI_FAQ)
                     ])
             ],
             ephemeral: true

@@ -8,6 +8,6 @@ import { EXCEPTION_CODES } from "@enums";
 export class UserNotRegisteredException extends Exception {
     /* ======================= Constructor ======================= */
     constructor() {
-        super(EXCEPTION_CODES.CHAMPIONSHIP_REGISTRATION_REQUIRED, "Vous devez vous inscrire au tournoi avant de ouvoir faire ceci!", COLOR_ERROR);
+        super(EXCEPTION_CODES.CHAMPIONSHIP_REGISTRATION_REQUIRED, "Vous devez vous inscrire au tournoi avant de pouvoir faire ceci!", COLOR_ERROR);
     }
 }

@@ -1,6 +1,6 @@
 import { Types } from "mongoose";
 import { Base, TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
-import { DocumentType, getModelForClass, isDocument, Prop, Ref } from "@typegoose/typegoose";
+import { DocumentType, getModelForClass, Index, isDocument, Prop, Ref } from "@typegoose/typegoose";
 import { Match } from "@models/championship/Match";
 import { Participant } from "@models/championship/Participant";
 import { Model, RequiredProp } from "@decorators/database";
@@ -16,6 +16,7 @@ import {
 export interface MatchmakingTicket extends Base { }
 
 @Model(DATABASE_COLLECTIONS.MATCHMAKING_TICKETS, DATABASE_MODELS.MATCHMAKING_TICKET)
+@Index({ participant: 1, platform: 1, match: 1 }, { unique: true })
 export class MatchmakingTicket extends TimeStamps {
     @RequiredProp({ type: String, enum: MATCHMAKING_TICKET_STATUS_VALUES })
     public status!: MatchmakingTicketStatus;
@@ -33,8 +34,8 @@ export class MatchmakingTicket extends TimeStamps {
         return this.participant;
     }
 
-    @Prop({ ref: () => Match, required: false })
-    public match?: Ref<Match, Types.ObjectId>;
+    @Prop({ ref: () => Match, required: false, default: null })
+    public match: Ref<Match, Types.ObjectId> | null = null;
 }
 
 export const MatchmakingTicketModel = getModelForClass(MatchmakingTicket);

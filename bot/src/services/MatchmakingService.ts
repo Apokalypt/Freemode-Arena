@@ -18,13 +18,13 @@ export class MatchmakingService {
     }
 
 
-    public async searchTicket(platform: Platforms, player: Participant) {
-        const playersIdToAvoid = await MatchModel.findAllPlayerOpponents(player._id);
-        playersIdToAvoid.push(player._id);
+    public async searchTicket(participant: Participant) {
+        const playersIdToAvoid = await MatchModel.findAllPlayerOpponents(participant._id);
+        playersIdToAvoid.push(participant._id);
 
         const ticket: MatchmakingTicketDocument | null = await MatchmakingTicketModel.findOneAndUpdate(
             {
-                platform,
+                platform: participant.platform,
                 participant: { $nin: playersIdToAvoid },
                 status: MATCHMAKING_TICKET_STATUS.WAITING
             },
@@ -35,26 +35,16 @@ export class MatchmakingService {
         return ticket;
     }
 
-    public async isParticipantInQueue(platform: Platforms, player: Participant): Promise<boolean> {
-        const ticket = await MatchmakingTicketModel.findOne({
-            platform,
-            participant: player._id,
-            status: MATCHMAKING_TICKET_STATUS.WAITING
-        }).exec();
-
-        return !!ticket;
-    }
-
-    public async createTicket(platform: Platforms, player: Participant): Promise<MatchmakingTicketDocument | null> {
+    public async createTicket(player: Participant): Promise<MatchmakingTicketDocument | null> {
         return MatchmakingTicketModel.create({
-            platform,
+            platform: player.platform,
             participant: player._id,
             status: MATCHMAKING_TICKET_STATUS.WAITING
         });
     }
 
-    public async getUserPlatforms(guild: Guild, player: Participant): Promise<Platforms[]> {
-        const member = await guild.members.fetch(player._id);
+    public async getUserPlatforms(guild: Guild, playerId: string): Promise<Platforms[]> {
+        const member = await guild.members.fetch(playerId);
 
         return PLATFORMS_ROLES.filter( conf => member.roles.cache.has(conf.role) )
             .map( conf => conf.platform );

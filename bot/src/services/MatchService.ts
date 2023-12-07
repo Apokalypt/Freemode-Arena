@@ -1,13 +1,21 @@
+import type { APIActionRowComponent, APIMessageActionRowComponent } from "discord-api-types/v10";
 import { isDocument } from "@typegoose/typegoose";
-import { ButtonStyle, ChannelType, ComponentType, Guild, InteractionButtonComponentData } from "discord.js";
+import {
+    ButtonStyle,
+    ChannelType,
+    ComponentType,
+    Guild,
+    InteractionButtonComponentData,
+    type InteractionReplyOptions
+} from "discord.js";
 import { CHAMPIONSHIP_CHANNEL_ID, SUPPORT_ROLE_ID } from "@constants";
-import { ShowWeaponCategorySelectionAction } from "../actions/ShowWeaponCategorySelectionAction";
 import { BotClient } from "@models/BotClient";
 import { MatchMap } from "@models/championship/MatchMap";
 import { MatchPlayer } from "@models/championship/MatchPlayer";
 import { Participant } from "@models/championship/Participant";
 import { InGameWeapon } from "@models/championship/InGameWeapon";
 import { MatchDocument, MatchModel } from "@models/championship/Match";
+import { ShowWeaponSelectionMenuAction } from "../actions/ShowWeaponSelectionMenuAction";
 import { MatchmakingTicketDocument } from "@models/championship/MatchmakingTicket";
 import { UnknownException } from "@exceptions/UnknownException";
 import { InvalidUserSelectionException } from "@exceptions/championship/InvalidUserSelectionException";
@@ -76,7 +84,7 @@ export class MatchService {
             label: "Sélectionner mes armes",
             customId: "dummy-id-0"
         };
-        const action = new ShowWeaponCategorySelectionAction({ });
+        const action = new ShowWeaponSelectionMenuAction({ });
         client.actions.linkComponentToAction(buttonToSelectWeapons, action);
 
         await thread.send({
@@ -150,7 +158,7 @@ export class MatchService {
         // Add all weapons selected by the player to the category
         selection.push(
             ...category.weapons.filter( (_, index) => weaponIds.includes(index.toString()) )
-                .map( w => new InGameWeapon(w.name, w.value) )
+                .map( w => new InGameWeapon(category.name, w.name, w.value) )
         );
 
         player.weapons.selection = selection;
@@ -161,6 +169,28 @@ export class MatchService {
         }
 
         return category;
+    }
+
+    public buildPlayerMenu(player: MatchPlayer, title: string, footer: string, components: APIActionRowComponent<APIMessageActionRowComponent>[]): InteractionReplyOptions {
+        const INDENT = "\u200b ".repeat(5);
+
+        let content = `# ${title}\n` +
+            "\n" +
+            "## Status\n" +
+            `${player.weapons.stringifyStatus()}\n` +
+            `## Sélection - ${player.weapons.selectionCost} / ${player.weapons.budget} jetons\n`;
+
+        if (player.weapons.selection.length === 0) {
+            content += "*Aucune arme sélectionnée pour le moment*\n";
+        } else {
+            content += player.weapons.selection.map( weapon => `${INDENT} • ${weapon.toString()}` )
+                .join('\n') + "\n";
+        }
+
+        content += "\n" +
+            `### ${footer} :arrow_heading_down:`;
+
+        return { content, components };
     }
 }
 

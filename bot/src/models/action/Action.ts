@@ -401,7 +401,7 @@ export abstract class ActionExecutionContext<
         }
 
         this._resetInteractionMessage(
-            interaction,
+            result,
             message,
             { embeds: [{ description: messageContent, fields: [{ name: "Choix", value: result.component.label ?? "??" }], color: COLOR_INFO }] }
         );
@@ -668,7 +668,11 @@ export abstract class ActionExecutionContext<
             embeds: data.embeds ?? []
         };
 
-        interaction.editReply(finalData).catch( () => { /* Ignore */ } );
+        if (interaction.isMessageComponent() && !interaction.replied) {
+            interaction.update(finalData).catch( () => { /* Ignore */ } );
+        } else {
+            interaction.editReply(finalData).catch( () => { /* Ignore */ } );
+        }
     }
 
     private _deleteInteractionResponse(interaction: RepliableInteraction, message: InteractionResponse | Message): void {

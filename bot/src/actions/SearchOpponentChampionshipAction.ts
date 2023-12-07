@@ -76,10 +76,6 @@ class SearchOpponentChampionshipActionExecutionContext<IsValidated extends true 
 
         const ticket = await MatchmakingService.instance.searchTicket(platform, participant);
         if (ticket) {
-            if (ticket.participantId === participant._id) {
-                throw new MatchmakingInProgressException(platform);
-            }
-
             const match = await MatchService.instance.createMatchFromTicket(this._client, this._interaction!.guild!, ticket, participant);
 
             await this._answer({
@@ -88,6 +84,10 @@ class SearchOpponentChampionshipActionExecutionContext<IsValidated extends true 
                 ephemeral: true
             });
         } else {
+            if (await MatchmakingService.instance.isParticipantInQueue(platform, participant)) {
+                throw new MatchmakingInProgressException(platform);
+            }
+
             await MatchmakingService.instance.createTicket(platform, participant);
 
             await this._answer({

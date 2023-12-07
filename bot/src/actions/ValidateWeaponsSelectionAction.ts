@@ -1,17 +1,18 @@
 import type { BotClient } from "@models/BotClient";
 import type { WithoutModifiers, InteractionForAction } from "@bot-types";
-import { ChannelType } from "discord.js";
+import { APIButtonComponentWithCustomId, ButtonStyle, ChannelType, ComponentType } from "discord.js";
 import { getDiscriminatorModelForClass } from "@typegoose/typegoose";
 import { Action, ActionExecutionContext, ActionModel, InputAction, InputActionValidated } from "@models/action/Action";
 import { IntermediateModel } from "@decorators/database";
-import { InvalidActionException } from "@exceptions/actions/InvalidActionException";
+import { ShowWeaponCategorySelectionAction } from "./ShowWeaponCategorySelectionAction";
 import { ACTION_CODES, DATABASE_MODELS } from "@enums";
 import { ParticipantModel } from "@models/championship/Participant";
 import { MatchService } from "@services/MatchService";
-import { InvalidPlayerStateException } from "@exceptions/championship/InvalidPlayerStateException";
-import { UnknownPlayerException } from "@exceptions/championship/UnknownPlayerException";
 import { UnknownMatchException } from "@exceptions/championship/UnknownMatchException";
+import { InvalidActionException } from "@exceptions/actions/InvalidActionException";
+import { UnknownPlayerException } from "@exceptions/championship/UnknownPlayerException";
 import { UserNotRegisteredException } from "@exceptions/championship/UserNotRegisteredException";
+import { InvalidPlayerStateException } from "@exceptions/championship/InvalidPlayerStateException";
 
 type ValidateWeaponsSelectionActionProperties = WithoutModifiers<ValidateWeaponsSelectionAction>;
 
@@ -47,7 +48,13 @@ class ValidateWeaponsSelectionActionExecutionContext<IsValidated extends true | 
     }
 
     protected async _execute(this:ValidateWeaponsSelectionActionExecutionContext<true>): Promise<void> {
-        await this._deferAnswer();
+        if (this._source.message.flags.has("Ephemeral")) {
+            // We are navigating through the menu, we don't want to send new messages each time but just update the
+            // previous one to offer a better user experience.
+            await this._source.deferUpdate();
+        } else {
+            await this._source.deferReply({ ephemeral: true });
+        }
 
         const participant = await ParticipantModel.findById(this._source.user.id);
         if (!participant) {
@@ -67,7 +74,7 @@ class ValidateWeaponsSelectionActionExecutionContext<IsValidated extends true | 
         if (player.weapons.selection.length === 0) {
             throw new InvalidPlayerStateException("Vous n'avez sélectionné aucune arme.");
         }
-        if (player.weapons.validatedAt != null) {
+        if (!player.weapons.selectionIsUpdatable()) {
             throw new InvalidPlayerStateException("Vous avez déjà validé votre sélection d'armes et ne pouvez plus la modifier!");
         }
 
@@ -116,10 +123,38 @@ class ValidateWeaponsSelectionActionExecutionContext<IsValidated extends true | 
             })
         });
 
-        await this._answer({
-            content: "Votre sélection d'armes a bien été validée.",
-            ephemeral: true
-        });
+        const buttonToSelectWeapons: APIButtonComponentWithCustomId = {
+            type: ComponentType.Button,
+            style: ButtonStyle.Primary,
+            label: "Modifier la sélection",
+            custom_id: "dummy-id-0",
+            disabled: !player.weapons.selectionIsUpdatable()
+        };
+        const action = new ShowWeaponCategorySelectionAction({ });
+        this._client.actions.linkComponentToAction(buttonToSelectWeapons, action);
+
+        const validationButton: APIButtonComponentWithCustomId = {
+            type: ComponentType.Button,
+            style: ButtonStyle.Success,
+            custom_id: "dummy-validate-selection",
+            label: "Valider la sélection",
+            disabled: !player.weapons.selectionIsUpdatable()
+        };
+        const actionToValidate = new ValidateWeaponsSelectionAction({ });
+        this._client.actions.linkComponentToAction(validationButton, actionToValidate);
+
+        const data = MatchService.instance.buildPlayerMenu(
+            player,
+            "Tableau de bord",
+            "Clique ci-dessous pour modifier ta sélection ou la valider",
+            [
+                {
+                    type: ComponentType.ActionRow,
+                    components: [buttonToSelectWeapons, validationButton]
+                }
+            ]
+        );
+        await this._source.editReply(data)
     }
 }
 

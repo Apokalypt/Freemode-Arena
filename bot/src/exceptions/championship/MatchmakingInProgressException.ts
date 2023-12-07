@@ -11,7 +11,7 @@ export class MatchmakingInProgressException extends Exception {
     constructor(platform: Platforms) {
         super(
             EXCEPTION_CODES.CHAMPIONSHIP_MATCHMAKING_IN_PROGRESS,
-            `Vous avez déjà une recherche de match en cours sur ${platform}. Merci de patienter le temps que nous trouvions un adversaire.`,
+            `Vous avez déjà une recherche de match en cours sur "${platform}". Merci de patienter le temps que nous vous trouvions un adversaire.`,
             COLOR_ERROR
         );
     }

@@ -20,6 +20,7 @@ export class MatchmakingService {
 
     public async searchTicket(platform: Platforms, player: Participant) {
         const playersIdToAvoid = await MatchModel.findAllPlayerOpponents(player._id);
+        playersIdToAvoid.push(player._id);
 
         const ticket: MatchmakingTicketDocument | null = await MatchmakingTicketModel.findOneAndUpdate(
             {
@@ -32,6 +33,16 @@ export class MatchmakingService {
         ).exec();
 
         return ticket;
+    }
+
+    public async isParticipantInQueue(platform: Platforms, player: Participant): Promise<boolean> {
+        const ticket = await MatchmakingTicketModel.findOne({
+            platform,
+            participant: player._id,
+            status: MATCHMAKING_TICKET_STATUS.WAITING
+        }).exec();
+
+        return !!ticket;
     }
 
     public async createTicket(platform: Platforms, player: Participant): Promise<MatchmakingTicketDocument | null> {

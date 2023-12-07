@@ -14,4 +14,17 @@ export class MatchPlayerWeapons {
 
     @Prop({ type: Date, default: null })
     public validatedAt!: Date | null;
+
+
+    public selectionIsUpdatable(): boolean {
+        return this.validatedAt == null;
+    }
+
+    public stringifyStatus() {
+        if (this.validatedAt == null) {
+            return ":hourglass: - Non Validé";
+        } else {
+            return ":white_check_mark: - Validé";
+        }
+    }
 }

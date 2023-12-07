@@ -63,7 +63,7 @@ class RegisterForChampionshipActionExecutionContext<IsValidated extends true | f
         }
 
         const validateChoice = await this._askForBinaryChoice(
-            '## :crossed_swords: Vous êtes sur le point de vous inscrire à Freemode Arena 3, Souhaitez-vous continuer votre inscription ?\n' +
+            '## :crossed_swords: Vous êtes sur le point de vous inscrire à Freemode Arena 4, Souhaitez-vous continuer votre inscription ?\n' +
             '** **\n' +
             ':info: *En continuant, vous confirmez avoir lu le fonctionnement du tournoi et vous vous engagez à participer.*'
         );

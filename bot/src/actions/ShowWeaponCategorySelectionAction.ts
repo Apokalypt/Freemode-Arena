@@ -1,12 +1,12 @@
-import type { ButtonComponentData } from "discord.js";
+import type { APIButtonComponentWithCustomId, APIStringSelectComponent } from "discord.js";
 import type { BotClient } from "@models/BotClient";
 import type { WithoutModifiers, InteractionForAction } from "@bot-types";
 import { getDiscriminatorModelForClass } from "@typegoose/typegoose";
-import { ButtonStyle, ComponentType, StringSelectMenuComponentData } from "discord.js";
+import { ButtonStyle, ComponentType } from "discord.js";
 import { MatchService } from "@services/MatchService";
 import { ParticipantModel } from "@models/championship/Participant";
 import { ShowWeaponsSelectionAction } from "./ShowWeaponsSelectionAction";
-import { ValidateWeaponsSelectionAction } from "./ValidateWeaponsSelectionAction";
+import { ShowWeaponSelectionMenuAction } from "./ShowWeaponSelectionMenuAction";
 import { Action, ActionExecutionContext, ActionModel, InputAction, InputActionValidated } from "@models/action/Action";
 import { UnknownMatchException } from "@exceptions/championship/UnknownMatchException";
 import { InvalidActionException } from "@exceptions/actions/InvalidActionException";
@@ -73,27 +73,19 @@ class ShowWeaponCategorySelectionActionExecutionContext<IsValidated extends true
             throw new UnknownPlayerException();
         }
 
-        if (player.weapons.validatedAt != null) {
+        if (!player.weapons.selectionIsUpdatable()) {
             throw new InvalidPlayerStateException("Vous avez déjà validé votre sélection d'armes et ne pouvez plus la modifier!");
-        }
-
-        let actualSelectionSection: string;
-        if (player.weapons.selection.length === 0) {
-            actualSelectionSection = "*Aucune arme sélectionnée pour le moment*\n";
-        } else {
-            actualSelectionSection = player.weapons.selection.map( weapon => `- ${weapon.name} [${weapon.cost}]` )
-                .join("\n") + "\n";
         }
 
         const weapons = MatchService.instance.getWeaponsCategories();
 
-        const categorySelectMenu: StringSelectMenuComponentData = {
+        const categorySelectMenu: APIStringSelectComponent = {
             type: ComponentType.StringSelect,
-            customId: "dummy",
+            custom_id: "dummy",
             placeholder: "Clique ici pour sélectionner une catégorie d'arme",
-            minValues: 1,
-            maxValues: 1,
-            options: weapons.map( (category: any) => ({
+            min_values: 1,
+            max_values: 1,
+            options: weapons.map( category => ({
                 label: category.name,
                 value: category.id.toString(),
             }) )
@@ -101,22 +93,20 @@ class ShowWeaponCategorySelectionActionExecutionContext<IsValidated extends true
         const action = new ShowWeaponsSelectionAction({ });
         this._client.actions.linkComponentToAction(categorySelectMenu, action, "categoryId");
 
-        const validationButton: ButtonComponentData = {
+        const backToHomeMenuButton: APIButtonComponentWithCustomId = {
             type: ComponentType.Button,
-            style: ButtonStyle.Success,
-            customId: "dummy",
-            label: "Valider la sélection"
+            style: ButtonStyle.Primary,
+            custom_id: "dummy-back-to-categories",
+            label: "Retour au menu principal"
         };
-        const actionToValidate = new ValidateWeaponsSelectionAction({ });
-        this._client.actions.linkComponentToAction(validationButton, actionToValidate);
+        const actionToBackToHomeMenu = new ShowWeaponSelectionMenuAction({ });
+        this._client.actions.linkComponentToAction(backToHomeMenuButton, actionToBackToHomeMenu);
 
-        await this._source.editReply({
-            content: `### Armes sélectionnées ( ${player.weapons.selectionCost} / ${player.weapons.budget} )\n` +
-                actualSelectionSection +
-                "\n" +
-                "\n" +
-                ":rightarrow: Veuillez sélectionner la catégorie de l'arme que vous souhaitez sélectionner :arrow_heading_down:",
-            components: [
+        const data = MatchService.instance.buildPlayerMenu(
+            player,
+            "Menu - Catégories d'armes",
+            "Clique ci-dessous pour sélectionner la catégorie de l'arme à ajouter/retirer",
+            [
                 {
                     type: ComponentType.ActionRow,
                     components: [
@@ -126,11 +116,12 @@ class ShowWeaponCategorySelectionActionExecutionContext<IsValidated extends true
                 {
                     type: ComponentType.ActionRow,
                     components: [
-                        validationButton
+                        backToHomeMenuButton
                     ]
                 }
             ]
-        });
+        );
+        await this._source.editReply(data);
     }
 }
 

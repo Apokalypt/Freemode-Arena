@@ -1,5 +1,6 @@
 import type { BotClient } from "@models/BotClient";
-import type { WithoutModifiers, InteractionForAction } from "@bot-types";
+import type { InteractionForAction, WithoutModifiers } from "@bot-types";
+import { ButtonStyle, ComponentType } from "discord-api-types/v10";
 import { getDiscriminatorModelForClass } from "@typegoose/typegoose";
 import { Action, ActionExecutionContext, ActionModel, InputAction, InputActionValidated } from "@models/action/Action";
 import { IntermediateModel } from "@decorators/database";
@@ -8,8 +9,8 @@ import { MatchmakingService } from "@services/MatchmakingService";
 import { ParticipantModel } from "@models/championship/Participant";
 import { InvalidActionException } from "@exceptions/actions/InvalidActionException";
 import { UserNotRegisteredException } from "@exceptions/championship/UserNotRegisteredException";
-import { MatchmakingInProgressException } from "@exceptions/championship/MatchmakingInProgressException";
 import { ACTION_CODES, DATABASE_MODELS } from "@enums";
+import { EMOJI_INFORMATION, FAQ_CHANNEL_ID } from "@constants";
 
 type SearchOpponentChampionshipActionProperties = WithoutModifiers<SearchOpponentChampionshipAction>;
 
@@ -57,23 +58,55 @@ class SearchOpponentChampionshipActionExecutionContext<IsValidated extends true 
             const match = await MatchService.instance.createMatchFromTicket(this._client, this._interaction!.guild!, ticket, participant);
 
             await this._answer({
-                content: "Nous vous avons trouvé un adversaire!\n" +
-                    `**Rendez-vous dans votre fil de discussion ( <#${match.channel.threadId}> ) pour découvrir le détail du match et pour convenir d'une date avec votre adversaire.**`,
+                content: "## Adversaire trouvé!\n" +
+                    "** **\n" +
+                    `- Plateforme: **${participant.platform}**\n` +
+                    `- Adversaire: <@${ticket.participantId}>\n` +
+                    "\n" +
+                    `${EMOJI_INFORMATION} Rendez-vous dans votre fil de discussion ( <#${match.channel.threadId}> ) pour sélectionner vos armes et pour convenir d'une date avec votre adversaire.`,
+                components: [
+                    {
+                        type: ComponentType.ActionRow,
+                        components: [
+                            {
+                                type: ComponentType.Button,
+                                style: ButtonStyle.Link,
+                                label: "Clique ici pour accéder au fil",
+                                url: `https://discord.com/channels/${this._source.guildId}/${match.channel.threadId}`
+                            }
+                        ]
+                    },
+                    {
+                        type: ComponentType.ActionRow,
+                        components: [
+                            {
+                                type: ComponentType.Button,
+                                style: ButtonStyle.Link,
+                                label: "Règlement + FAQ",
+                                url: `https://discord.com/channels/${this._source.guildId}/${FAQ_CHANNEL_ID}`
+                            }
+                        ]
+                    }
+                ],
                 ephemeral: true
             });
         } else {
             await MatchmakingService.instance.createTicket(participant)
                 .catch( error => {
                     if (error.name === "MongoServerError" && error.code === 11000) {
-                        throw new MatchmakingInProgressException(participant.platform);
+                        return null;
                     }
 
                     throw error;
                 });
 
             await this._answer({
-                content: `Vous avez été ajouté à la liste d\'attente sur la plateforme "**${participant.platform}**".\n` +
-                    'Vous serez notifié dès qu\'un adversaire sera disponible :thumbsup:',
+                content: "## Matchmaking en cours\n" +
+                    "** **\n" +
+                    `- Plateforme: **${participant.platform}**\n` +
+                    `- Temps d'attente: *inconnu*\n` +
+                    "\n" +
+                    `${EMOJI_INFORMATION} Dès lors qu'un joueur cherchera un adversaire sur la même plateforme que vous, nous créerons un fil de discussion :thumbsup:`,
                 ephemeral: true
             });
         }

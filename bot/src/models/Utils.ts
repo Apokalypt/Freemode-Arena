@@ -24,14 +24,10 @@ export class Utils {
     ): Promise<InteractionResponse<BooleanCache<Cached>> | Message<BooleanCache<Cached>>> {
         if (!interaction.replied && !interaction.deferred) {
             return interaction.reply(data);
-        } else if (interaction.replied && !options?.forceEdit) {
-            return interaction.followUp(data);
+        } else if (interaction.replied && options?.forceEdit) {
+            return interaction.editReply(data);
         } else {
-            if (interaction.ephemeral != null && data.ephemeral != null && data.ephemeral !== interaction.ephemeral) {
-                return interaction.followUp(data);
-            } else {
-                return interaction.editReply(data);
-            }
+            return interaction.followUp(data);
         }
     }
 }

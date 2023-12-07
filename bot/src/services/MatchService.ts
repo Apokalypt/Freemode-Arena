@@ -87,11 +87,11 @@ export class MatchService {
         const action = new ShowWeaponSelectionMenuAction({ });
         client.actions.linkComponentToAction(buttonToSelectWeapons, action);
 
-        await thread.send({
+        const message = await thread.send({
             content: `# <@${ticket.participant._id}> VS <@${opponent._id}>\n` +
                 "** **" +
                 "Ce fil de discussion a été créé pour que vous puissiez organiser votre match et discuter avec les " +
-                `organisateurs (<@&${SUPPORT_ROLE_ID}>) en cas de besoin.\n` +
+                `organisateurs (<@&SUPPORT_ROLE_ID>) en cas de besoin.\n` +
                 "\n" +
                 "## Étapes\n" +
                 "1. Chaque joueur sélectionne ses armes\n" +
@@ -113,6 +113,12 @@ export class MatchService {
                 roles: [],
                 users: [ticket.participant._id, opponent._id]
             }
+        });
+        setImmediate( () => {
+            return Promise.allSettled([
+                message.pin(),
+                message.edit({ content: message.content.replace("SUPPORT_ROLE_ID", SUPPORT_ROLE_ID) })
+            ])
         });
 
         return match;

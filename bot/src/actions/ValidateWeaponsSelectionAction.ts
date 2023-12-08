@@ -94,7 +94,9 @@ class ValidateWeaponsSelectionActionExecutionContext<IsValidated extends true | 
         await match.save();
 
         setImmediate(async () => {
-            if (match.players.some( p => p.weapons.validatedAt == null )) {
+            const updatedMatch = await MatchService.instance.getMatchFromDiscordChannel(this._source.guildId, this._source.channelId)
+                .catch( _ => null );
+            if (!updatedMatch || updatedMatch.players.some( p => p.weapons.validatedAt == null )) {
                 return;
             }
 
@@ -107,15 +109,15 @@ class ValidateWeaponsSelectionActionExecutionContext<IsValidated extends true | 
                 content: "# Le match peut commencer!\n" +
                     "** **\n" +
                     "## Sélections\n" +
-                    `### - <@${match.players[0].participantId}>\n` +
-                    `${match.players[0].weapons.stringifySelection()}` +
-                    `### - <@${match.players[1].participantId}>\n` +
-                    `${match.players[1].weapons.stringifySelection()}\n` +
+                    `### - <@${updatedMatch.players[0].participantId}>\n` +
+                    `${updatedMatch.players[0].weapons.stringifySelection()}` +
+                    `### - <@${updatedMatch.players[1].participantId}>\n` +
+                    `${updatedMatch.players[1].weapons.stringifySelection()}\n` +
                     `<:white_right_arrow:1182354037346148482> À vous de convenir d'une date pour effectuer votre match ${EMOJI_MATCHMAKING}`,
                 embeds: [
                     new EmbedBuilder()
                         .setTitle("Lieu du match")
-                        .setImage(match.map.url)
+                        .setImage(updatedMatch.map.url)
                 ],
                 components: [
                     {

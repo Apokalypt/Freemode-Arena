@@ -11,7 +11,7 @@ import { ShowWeaponCategorySelectionAction } from "./ShowWeaponCategorySelection
 import { Action, ActionExecutionContext, ActionModel, InputAction, InputActionValidated } from "@models/action/Action";
 import { UnknownMatchException } from "@exceptions/championship/UnknownMatchException";
 import { InvalidActionException } from "@exceptions/actions/InvalidActionException";
-import { UnknownPlayerException } from "@exceptions/championship/UnknownPlayerException";
+import { NotPlayerInMatchException } from "@exceptions/championship/NotPlayerInMatchException";
 import { UserNotRegisteredException } from "@exceptions/championship/UserNotRegisteredException";
 import { InvalidPlayerStateException } from "@exceptions/championship/InvalidPlayerStateException";
 import { ACTION_CODES, DATABASE_MODELS } from "@enums";
@@ -87,7 +87,7 @@ class ShowWeaponsSelectionActionExecutionContext<IsValidated extends true | fals
 
         const player = match.players.find( p => p.participantId === participant._id );
         if (!player) {
-            throw new UnknownPlayerException();
+            throw new NotPlayerInMatchException();
         }
 
         if (!player.weapons.selectionIsUpdatable()) {

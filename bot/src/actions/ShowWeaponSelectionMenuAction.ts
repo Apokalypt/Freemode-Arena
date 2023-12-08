@@ -10,7 +10,7 @@ import { ShowWeaponCategorySelectionAction } from "./ShowWeaponCategorySelection
 import { Action, ActionExecutionContext, ActionModel, InputAction, InputActionValidated } from "@models/action/Action";
 import { UnknownMatchException } from "@exceptions/championship/UnknownMatchException";
 import { InvalidActionException } from "@exceptions/actions/InvalidActionException";
-import { UnknownPlayerException } from "@exceptions/championship/UnknownPlayerException";
+import { NotPlayerInMatchException } from "@exceptions/championship/NotPlayerInMatchException";
 import { UserNotRegisteredException } from "@exceptions/championship/UserNotRegisteredException";
 import { ACTION_CODES, DATABASE_MODELS } from "@enums";
 import { IntermediateModel } from "@decorators/database";
@@ -69,7 +69,7 @@ class ShowWeaponSelectionMenuActionExecutionContext<IsValidated extends true | f
 
         const player = match.players.find( p => p.participantId === participant._id );
         if (!player) {
-            throw new UnknownPlayerException();
+            throw new NotPlayerInMatchException();
         }
 
         const buttonToSelectWeapons: APIButtonComponentWithCustomId = {

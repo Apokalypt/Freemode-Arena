@@ -10,7 +10,7 @@ import { ParticipantModel } from "@models/championship/Participant";
 import { MatchService } from "@services/MatchService";
 import { UnknownMatchException } from "@exceptions/championship/UnknownMatchException";
 import { InvalidActionException } from "@exceptions/actions/InvalidActionException";
-import { UnknownPlayerException } from "@exceptions/championship/UnknownPlayerException";
+import { NotPlayerInMatchException } from "@exceptions/championship/NotPlayerInMatchException";
 import { UserNotRegisteredException } from "@exceptions/championship/UserNotRegisteredException";
 import { InvalidPlayerStateException } from "@exceptions/championship/InvalidPlayerStateException";
 import { EMOJI_MATCHMAKING, FAQ_CHANNEL_ID } from "@constants";
@@ -69,7 +69,7 @@ class ValidateWeaponsSelectionActionExecutionContext<IsValidated extends true | 
 
         const player = match.players.find( p => p.participantId === participant._id );
         if (!player) {
-            throw new UnknownPlayerException();
+            throw new NotPlayerInMatchException();
         }
 
         if (player.weapons.selection.length === 0) {

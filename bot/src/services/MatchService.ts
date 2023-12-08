@@ -1,4 +1,5 @@
 import type { APIActionRowComponent, APIMessageActionRowComponent } from "discord-api-types/v10";
+import type { ParticipantDocument } from "@models/championship/Participant";
 import { isDocument } from "@typegoose/typegoose";
 import {
     ButtonStyle,
@@ -12,7 +13,6 @@ import { CHAMPIONSHIP_CHANNEL_ID, SUPPORT_ROLE_ID } from "@constants";
 import { BotClient } from "@models/BotClient";
 import { MatchMap } from "@models/championship/MatchMap";
 import { MatchPlayer } from "@models/championship/MatchPlayer";
-import { Participant } from "@models/championship/Participant";
 import { InGameWeapon } from "@models/championship/InGameWeapon";
 import { MatchDocument, MatchModel } from "@models/championship/Match";
 import { ShowWeaponSelectionMenuAction } from "../actions/ShowWeaponSelectionMenuAction";
@@ -31,7 +31,7 @@ export class MatchService {
     }
 
 
-    public async createMatchFromTicket(client: BotClient, guild: Guild, ticket: MatchmakingTicketDocument, opponent: Participant) {
+    public async createMatchFromTicket(client: BotClient, guild: Guild, ticket: MatchmakingTicketDocument, opponent: ParticipantDocument) {
         if (!ticket.populated("participant")) {
             await ticket.populate("participant");
         }
@@ -65,11 +65,11 @@ export class MatchService {
             players: [
                 {
                     participant: ticket.participant._id,
-                    weapons: { }
+                    weapons: { budget: this._getBudget(ticket.participant, opponent) }
                 },
                 {
                     participant: opponent._id,
-                    weapons: { }
+                    weapons: { budget: this._getBudget(opponent, ticket.participant) }
                 }
             ],
             map
@@ -242,6 +242,12 @@ export class MatchService {
             `### ${footer} :arrow_heading_down:`;
 
         return { content, components };
+    }
+
+    private _getBudget(participant: ParticipantDocument, opponent: ParticipantDocument): number {
+        const levelDifference = opponent.level - participant.level;
+
+        return 10 + (levelDifference * 2);
     }
 }
 

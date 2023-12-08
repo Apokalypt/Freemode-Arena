@@ -8,71 +8,11 @@
                 "value": 1
             },
             {
-                "name": "Pistolet Calibre 50",
-                "value": 1
-            },
-            {
-                "name": "Pistolet de combat",
-                "value": 1
-            },
-            {
-                "name": "Pistolet en céramique",
-                "value": 1
-            },
-            {
-                "name": "Pistolet lourd",
-                "value": 1
-            },
-            {
-                "name": "Pistolet vintage",
-                "value": 1
-            },
-            {
-                "name": "Pistolet",
-                "value": 1
-            },
-            {
-                "name": "Revolver double action",
-                "value": 1
-            },
-            {
                 "name": "Revolver lourd",
                 "value": 1
             },
             {
-                "name": "Pétoire",
-                "value": 1
-            },
-            {
-                "name": "Pistolet Perico",
-                "value": 2
-            },
-            {
-                "name": "Pistolet automatique",
-                "value": 2
-            },
-            {
-                "name": "Revolver de la Navy",
-                "value": 2
-            },
-            {
-                "name": "Pistolet de précision",
-                "value": 2
-            },
-            {
                 "name": "Pistolet perforant",
-                "value": 2
-            },
-            {
-                "name": "Revolver lourd Mk II",
-                "value": 2
-            },
-            {
-                "name": "Pétoire Mk II",
-                "value": 2
-            },
-            {
-                "name": "Pistolet Mk II",
                 "value": 2
             }
         ]
@@ -82,19 +22,7 @@
         "name": "Mitraillettes",
         "weapons": [
             {
-                "name": "ADP de Combat",
-                "value": 2
-            },
-            {
-                "name": "Sulfateuse Gusenberg",
-                "value": 2
-            },
-            {
-                "name": "Mitraillette d'assaut",
-                "value": 2
-            },
-            {
-                "name": "Mitrailleuse légère",
+                "name": "Pistolet mitrailleur",
                 "value": 2
             },
             {
@@ -102,20 +30,8 @@
                 "value": 2
             },
             {
-                "name": "Mitraillette Mk II",
-                "value": 3
-            },
-            {
-                "name": "Dézingator Infernal",
-                "value": 4
-            },
-            {
                 "name": "Mitrailleuse de combat",
-                "value": 4
-            },
-            {
-                "name": "Mitrailleuse de combat Mk II",
-                "value": 6
+                "value": 5
             }
         ]
     },
@@ -124,19 +40,7 @@
         "name": "Fusils d'assaut",
         "weapons": [
             {
-                "name": "Fusil compact",
-                "value": 2
-            },
-            {
                 "name": "Fusil d'assaut",
-                "value": 3
-            },
-            {
-                "name": "Carabine",
-                "value": 3
-            },
-            {
-                "name": "Fusil amélioré",
                 "value": 3
             },
             {
@@ -144,36 +48,8 @@
                 "value": 3
             },
             {
-                "name": "Fusil militaire",
-                "value": 4
-            },
-            {
-                "name": "Fusil lourd",
-                "value": 4
-            },
-            {
                 "name": "Carabine spéciale",
                 "value": 4
-            },
-            {
-                "name": "Fusil d'assaut Mk II",
-                "value": 4
-            },
-            {
-                "name": "Carabine Mk II",
-                "value": 4
-            },
-            {
-                "name": "Fusil Bullpup Mk II",
-                "value": 4
-            },
-            {
-                "name": "Fusil de service",
-                "value": 5
-            },
-            {
-                "name": "Carabine spéciale Mk II",
-                "value": 5
             }
         ]
     },
@@ -182,40 +58,12 @@
         "name": "Fusils à pompe",
         "weapons": [
             {
-                "name": "Fusil à double canon",
+                "name": "Fusil à pompe",
                 "value": 1
             },
             {
-                "name": "Fusil à canon scié",
-                "value": 2
-            },
-            {
-                "name": "Fusil à pompe de combat",
-                "value": 2
-            },
-            {
-                "name": "Fusil à pompe Bullpup",
-                "value": 2
-            },
-            {
-                "name": "Fusil à pompe",
-                "value": 2
-            },
-            {
-                "name": "Fusil à pompe compact",
-                "value": 2
-            },
-            {
-                "name": "Fusil à pompe lourd",
-                "value": 3
-            },
-            {
-                "name": "Fusil à pompe Mk II",
-                "value": 4
-            },
-            {
                 "name": "Fusil à pompe d'assaut",
-                "value": 5
+                "value": 4
             }
         ]
     },
@@ -228,84 +76,48 @@
                 "value": 2
             },
             {
-                "name": "Fusil de précision",
-                "value": 2
-            },
-            {
                 "name": "Sniper lourd",
-                "value": 4
+                "value": 10
             },
             {
                 "name": "Fusil à lunette",
-                "value": 5
-            },
-            {
-                "name": "Sniper lourd Mk II",
-                "value": 6
-            },
-            {
-                "name": "Fusil à lunette Mk II",
-                "value": 6
+                "value": 7
             }
         ]
     },
     {
         "id": 6,
-        "name": "Armes lourde & projectiles",
+        "name": "Armes lourde",
         "weapons": [
             {
-                "name": "Bidon d'essence",
-                "value": 1
-            },
-            {
-                "name": "Grenades lacrymogène",
-                "value": 1
-            },
-            {
-                "name": "Cocktails molotov",
-                "value": 1
-            },
-            {
-                "name": "Grenades",
-                "value": 4
-            },
-            {
-                "name": "Lance-grenades compact",
-                "value": 4
-            },
-            {
-                "name": "Mines de proximité",
-                "value": 5
-            },
-            {
-                "name": "Bombes collantes",
-                "value": 5
-            },
-            {
                 "name": "Lance-grenades",
-                "value": 5
+                "value": 6
+            },
+            {
+                "name": "Minigun",
+                "value": 9
+            },
+            {
+                "name": "Lance-roquettes",
+                "value": 8
             }
         ]
     },
     {
         "id": 7,
-        "name": "Bonus",
+        "name": "Projectiles",
         "weapons": [
             {
-                "name": "Casque pare-balles",
-                "value": 3
+                "name": "Grenades",
+                "value": 1
             },
             {
-                "name": "Compétences de contacts",
-                "value": 3
+                "name": "Mines de proximité",
+                "value": 1
             },
             {
-                "name": "Compétences de PDG (Securoserv)",
-                "value": 4
-            },
-            {
-                "name": "Suicides autorisés",
-                "value": 5
+                "name": "Bombes collantes",
+                "value": 2
             }
         ]
     }

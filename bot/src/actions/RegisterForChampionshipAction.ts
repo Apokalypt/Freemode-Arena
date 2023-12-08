@@ -1,9 +1,8 @@
 import type { BotClient } from "@models/BotClient";
 import type { WithoutModifiers, InteractionForAction } from "@bot-types";
-import { ThreadAutoArchiveDuration } from "discord-api-types/v10";
 import { getDiscriminatorModelForClass } from "@typegoose/typegoose";
 import { MessageActionRowComponentBuilder } from "@discordjs/builders";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, ThreadAutoArchiveDuration } from "discord.js";
 import { DiscordChannel } from "@models/championship/DiscordChannel";
 import { ParticipantDocument, ParticipantModel } from "@models/championship/Participant";
 import { Action, ActionExecutionContext, ActionModel, InputAction, InputActionValidated } from "@models/action/Action";

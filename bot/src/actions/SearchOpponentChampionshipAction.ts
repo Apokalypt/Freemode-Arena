@@ -1,6 +1,6 @@
 import type { BotClient } from "@models/BotClient";
 import type { InteractionForAction, WithoutModifiers } from "@bot-types";
-import { ButtonStyle, ComponentType } from "discord-api-types/v10";
+import { ButtonStyle, ComponentType } from "discord.js";
 import { getDiscriminatorModelForClass } from "@typegoose/typegoose";
 import { Action, ActionExecutionContext, ActionModel, InputAction, InputActionValidated } from "@models/action/Action";
 import { IntermediateModel } from "@decorators/database";

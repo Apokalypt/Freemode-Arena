@@ -1,34 +1,42 @@
 [
     {
-        "name": "Fort Zancudo - Courte portée",
-        "url": "https://media.discordapp.net/attachments/549694549426044938/1038568477130244176/Camtasia_Studio_8_Screenshot_2022.10.26_-_00.16.03.66.png"
+        "name": "Airport",
+        "url": "https://cdn.discordapp.com/attachments/549694549426044938/1182728786068914336/Screenshot_2023-10-13_09-50-03.png?ex=6585c104&is=65734c04&hm=9de6ad728c98fe04784e277c7db47e559ed7c1c5cde56a78dce6b9f52c9478d0&"
     },
     {
-        "name": "Airport - Courte et longue portée",
-        "url": "https://media.discordapp.net/attachments/549694549426044938/1038568589512409199/Camtasia_Studio_8_Screenshot_2022.10.26_-_00.15.35.75.png"
+        "name": "Military Base",
+        "url": "https://cdn.discordapp.com/attachments/549694549426044938/1182727160109215864/Screenshot_2023-10-13_09-51-04.png?ex=6585bf80&is=65734a80&hm=b72907260d485054cc7e9cf1d173971d0aa085e3e9bf4e123cff34c9e8b6ccb9&"
     },
     {
-        "name": "Sandy Shores - Portée moyenne",
-        "url": "https://media.discordapp.net/attachments/549694549426044938/1038569287000006696/Camtasia_Studio_8_Screenshot_2022.10.26_-_00.16.36.87.png"
+        "name": "Wind Farm",
+        "url": "https://cdn.discordapp.com/attachments/549694549426044938/1182727161078091816/Screenshot_2023-10-13_09-51-47.png?ex=6585bf81&is=65734a81&hm=3a0593503ef392bc0742914d5e1567848dd021cff1561d10785f35663b5ce5b2&"
     },
     {
-        "name": "Canyon - Courte et moyenne portée",
-        "url": "https://media.discordapp.net/attachments/549694549426044938/1038569519188287488/Camtasia_Studio_8_Screenshot_2022.10.26_-_00.16.28.32.png"
+        "name": "Little Seoul",
+        "url": "https://cdn.discordapp.com/attachments/549694549426044938/1182727161837273148/Screenshot_2023-10-13_09-52-26.png?ex=6585bf81&is=65734a81&hm=b021fb4c5fd2bfbe34b7d9f6cf8f7effafe2f1bb2f5e9cc76ccebb075d295ea8&"
     },
     {
-        "name": "Vespucci Beach - Courte et longue portée",
-        "url": "https://media.discordapp.net/attachments/549694549426044938/1038569434035539978/Camtasia_Studio_8_Screenshot_2022.10.26_-_00.16.52.28.png"
+        "name": "Paleto Bay",
+        "url": "https://cdn.discordapp.com/attachments/549694549426044938/1182727162869067817/Screenshot_2023-10-13_09-53-01.png?ex=6585bf81&is=65734a81&hm=75c349d423dbbffe73e35c034fcf79896358bc61304755d09d251ab472279704&"
     },
     {
-        "name": "Wind Farm - Longue portée",
-        "url": "https://media.discordapp.net/attachments/549694549426044938/1038569614826819594/Camtasia_Studio_8_Screenshot_2022.10.26_-_00.17.00.68.png"
+        "name": "Raton Canyon",
+        "url": "https://cdn.discordapp.com/attachments/549694549426044938/1182727163548536922/Screenshot_2023-10-13_09-53-58.png?ex=6585bf81&is=65734a81&hm=021a85aa7782f0c0223bf7f2d865dd2c2ab167a1f4ff3ca853f1cdb57f8e2bcd&"
     },
     {
-        "name": "Terminal - Portée moyenne",
-        "url": "https://media.discordapp.net/attachments/549694549426044938/1038569413470847096/Camtasia_Studio_8_Screenshot_2022.10.26_-_00.16.45.09.png"
+        "name": "Sandy Shores",
+        "url": "https://cdn.discordapp.com/attachments/549694549426044938/1182727164576149544/Screenshot_2023-10-13_09-54-21.png?ex=6585bf82&is=65734a82&hm=1f739cccd690695f159b3788c4b52f0eae3a0392a07f95e1f4023f2bf67d3d6c&"
     },
     {
-        "name": "Land Act dam - Moyenne et longue portée",
-        "url": "https://media.discordapp.net/attachments/549694549426044938/1038569656803393637/Camtasia_Studio_8_Screenshot_2022.10.26_-_00.18.14.29.png"
+        "name": "South Los Santos",
+        "url": "https://cdn.discordapp.com/attachments/549694549426044938/1182727165226258532/Screenshot_2023-10-13_09-55-08.png?ex=6585bf82&is=65734a82&hm=19e3f607b5871bed17c0f9f0d33ea429d9f88f391e3f04cd0978a79d3b28c4f1&"
+    },
+    {
+        "name": "Terminal",
+        "url": "https://cdn.discordapp.com/attachments/549694549426044938/1182727165733781615/Screenshot_2023-10-13_09-55-33.png?ex=6585bf82&is=65734a82&hm=4539650ddc422affc3494ecae9d4776d35373d959949b43a6d44cf377184bc5b&"
+    },
+    {
+        "name": "Vespucci Beach",
+        "url": "https://cdn.discordapp.com/attachments/549694549426044938/1182727166459392070/Screenshot_2023-10-13_09-55-58.png?ex=6585bf82&is=65734a82&hm=9664803958dc07842e679759f7a634157206a4d8d2bbf03c00c6b15dd96e1f44&"
     }
 ]

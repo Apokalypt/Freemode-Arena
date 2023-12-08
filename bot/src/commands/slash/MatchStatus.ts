@@ -33,7 +33,7 @@ export = new SlashCommand(
             content: "## Sélections des armes\n" +
                 `### - <@${match.players[0].participantId}>  •  ${match.players[0].weapons.stringifyStatus()}\n` +
                 `${match.players[0].weapons.stringifySelection()}` +
-                `### - <@${match.players[1].participantId}>  •  ${match.players[0].weapons.stringifyStatus()}\n` +
+                `### - <@${match.players[1].participantId}>  •  ${match.players[1].weapons.stringifyStatus()}\n` +
                 `${match.players[1].weapons.stringifySelection()}\n`,
             allowedMentions: { parse: [] }
         });

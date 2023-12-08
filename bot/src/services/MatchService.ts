@@ -53,7 +53,7 @@ export class MatchService {
             name: `${ticket.participant.displayName} vs ${opponent.displayName} - ${String(count).padStart(4,'0')}`
         });
 
-        const map = this.getRandomMap();
+        const map = await this.getRandomMap(ticket.participant._id, opponent._id);
 
         const match = await MatchModel.create({
             channel: {
@@ -135,11 +135,61 @@ export class MatchService {
         }).exec();
     }
 
-    public getRandomMap(): MatchMap {
+    public async getRandomMap(firstPlayerId: string, secondPlayerId: string): Promise<MatchMap> {
         const maps: MapRawData[] = require('../data/maps.json');
-        const mapData = maps[Math.floor(Math.random() * maps.length)];
 
-        return new MatchMap(mapData.name, mapData.url);
+        const result: AggregatedMapCount[] = await MatchModel.aggregate([
+            { $match: { "players.participant": { $in: [firstPlayerId, secondPlayerId] } } },
+            { $group: { _id: "$map.name", count: { $sum: 1 } } }
+        ]).exec();
+
+        let minCount = Number.MAX_SAFE_INTEGER;
+        let globalCount = 0;
+        const mapsWithCount: MapWithCountRawData[] = maps.map( map => {
+            const count = result.find( r => r._id === map.name )?.count ?? 0;
+            if (count < minCount) {
+                minCount = count;
+            }
+
+            globalCount += count;
+            return { ...map, count, probability: 1 / maps.length };
+        });
+
+        let countTo0 = 0;
+        if (minCount === 0) {
+            countTo0 = mapsWithCount.filter(map => map.count === 0).length;
+        } else {
+            for (const map of mapsWithCount) {
+                map.count -= minCount;
+                globalCount -= minCount;
+
+                if (map.count === 0) {
+                    countTo0++;
+                }
+            }
+        }
+
+        if (globalCount !== 0) {
+            for (const map of mapsWithCount) {
+                if (map.count === 0) {
+                    map.probability = 1 / mapsWithCount.length + ((1 / mapsWithCount.length) / countTo0)
+                } else {
+                    map.probability = (1 / mapsWithCount.length) * ((globalCount - map.count) / globalCount);
+                }
+            }
+        }
+
+        const random = Math.random();
+        let sum = 0;
+        for (const map of mapsWithCount) {
+            sum += map.probability;
+            if (random <= sum) {
+                return new MatchMap(map.name, map.url)
+            }
+        }
+
+        // Should never happen
+        return new MatchMap(mapsWithCount[mapsWithCount.length - 1].name, mapsWithCount[mapsWithCount.length - 1].url);
     }
 
     public getWeaponsCategories(): CategoryRawData[] {
@@ -199,6 +249,10 @@ interface MapRawData {
     name: string;
     url: string;
 }
+interface MapWithCountRawData extends MapRawData {
+    count: number;
+    probability: number;
+}
 
 interface WeaponRawData {
     name: string;
@@ -209,4 +263,9 @@ interface CategoryRawData {
     id: number;
     name: string;
     weapons: WeaponRawData[];
+}
+
+interface AggregatedMapCount {
+    _id: string;
+    count: number;
 }

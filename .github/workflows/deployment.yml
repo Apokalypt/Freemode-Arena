@@ -1,0 +1,126 @@
+name: Deployment
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  checks-env:
+    runs-on: ubuntu-latest
+    environment: PROD
+
+    steps:
+      - name: 'Check if SSH_HOST is set'
+        run: |
+          if [ -z "${{ secrets.SSH_HOST }}" ]; then
+            echo "SSH_HOST is not set"
+            exit 1
+          fi
+
+      - name: 'Check if SSH_PORT is set'
+        run: |
+          if [ -z "${{ secrets.SSH_PORT }}" ]; then
+            echo "SSH_PORT is not set"
+            exit 1
+          fi
+
+      - name: 'Check if SSH_USER is set'
+        run: |
+          if [ -z "${{ secrets.SSH_USER }}" ]; then
+            echo "SSH_USER is not set"
+            exit 1
+          fi
+
+      - name: 'Check if SSH_PRIVATE_KEY is set'
+        run: |
+          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
+            echo "SSH_PRIVATE_KEY is not set"
+            exit 1
+          fi
+
+      - name: 'Check if BOT_DIR_NAME is set'
+        run: |
+          if [ -z "${{ secrets.BOT_DIR_NAME }}" ]; then
+            echo "BOT_DIR_NAME is not set"
+            exit 1
+          fi
+
+      - name: 'Check if BOT_PM2_NAME is set'
+        run: |
+          if [ -z "${{ secrets.BOT_PM2_NAME }}" ]; then
+            echo "BOT_PM2_NAME is not set"
+            exit 1
+          fi
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [checks-env]
+    environment: PROD
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: 'Set up Node.js version'
+        uses: actions/setup-node@v1
+        with:
+          node-version: '18.x'
+
+      - name: 'Build the project'
+        run: npm run build
+
+      - name: 'Remove dev dependencies and scripts from package.json'
+        run: |
+          jq 'del(.devDependencies,.scripts)' dist/package.json > dist/package.json.tmp
+          mv dist/package.json.tmp dist/package.json
+
+      - name: 'Generate package-lock.json in build directory'
+        run: |
+          cd dist
+          npm install --production
+          rm -rf node_modules
+          cd ..
+
+      - name: 'Upload artifact for deployment job'
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-artifact
+          path: ./dist
+          if-no-files-found: error
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [build]
+    environment:
+      name: PROD
+
+    steps:
+      - name: 'Download artifact from build job'
+        uses: actions/download-artifact@v2
+        with:
+          name: build-artifact
+
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: 'Creating Known Hosts file if it does not exist'
+        run: |
+          mkdir -p ~/.ssh
+          touch ~/.ssh/known_hosts
+
+      - name: 'Adding Known Hosts'
+        run: ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: 'Clean up deployment directory'
+        run: ssh -A -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'cd /home/${{ secrets.SSH_USER }}/${{ secrets.BOT_DIR_NAME }} && find . -maxdepth 1 -mindepth 1 ! -name 'node_modules' -exec rm -rf {} \;'
+
+      - name: 'Deploy source code with rsync'
+        run: rsync -avz -e "ssh -A -p ${{ secrets.SSH_PORT }}" ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/${{ secrets.BOT_DIR_NAME }}/
+
+      - name: 'Install dependencies'
+        run: ssh -A -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'cd /home/${{ secrets.SSH_USER }}/${{ secrets.BOT_DIR_NAME }}/ && npm install'
+
+      - name: 'Restart bot'
+        run: ssh -A -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'pm2 restart ${{ secrets.BOT_PM2_NAME }}'

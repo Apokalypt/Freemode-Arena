@@ -5,7 +5,7 @@
   "main": "src/index.ts",
   "scripts": {
     "transpile": "tsc",
-    "build": "npm install --include=dev && npm run transpile && npm install --omit=dev && cp .env.vault dist && cp ./src/assets ./dist/src/assets && cp ./src/data ./dist/src/data && cp package*.json dist && sed 's+src/index.ts+src/index.js+g' package.json > dist/package.json",
+    "build": "npm install --include=dev && npm run transpile && npm install --omit=dev && cp .env.vault dist && cp -r ./src/assets ./dist/src/assets && cp -r ./src/data ./dist/src/data && cp package*.json dist && sed 's+src/index.ts+src/index.js+g' package.json > dist/package.json",
     "start": "npm install --include=dev && npm run transpile && node dist/src/index.js",
     "dev": "npm install --include=dev && nodemon --config nodemon.json src/index.ts --trace-warnings",
     "dev:debug": "npm install --include=dev && nodemon --config nodemon.json --inspect-brk src/index.ts --trace-warnings"

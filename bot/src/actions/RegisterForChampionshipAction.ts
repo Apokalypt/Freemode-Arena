@@ -97,7 +97,8 @@ class RegisterForChampionshipActionExecutionContext<IsValidated extends true | f
         }
 
         // We create the document first to avoid concurrency issues and check if the user is already registered
-        const participant: ParticipantDocument = await ParticipantModel.create({ _id: user.id, platform, level: 0, displayName })
+        const raw = { _id: user.id, platform, level: MatchmakingService.instance.getUserLevel(user.id), displayName };
+        const participant: ParticipantDocument = await ParticipantModel.create(raw)
             .catch( error => {
                 if (error.name === "MongoServerError" && error.code === 11000) {
                     throw new RegistrationRefusedException("Vous êtes déjà inscrit au championnat.");

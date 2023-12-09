@@ -6,6 +6,7 @@ import { IntegerCommandOption } from "@models/command/options/valuable/IntegerCo
 import { SubSlashCommandOption } from "@models/command/options/executable/SubSlashCommandOption";
 import { SubSlashCommandGroupOption } from "@models/command/options/executable/SubSlashCommandGroupOption";
 import { MatchService } from "@services/MatchService";
+import { MatchmakingService } from "@services/MatchmakingService";
 import { UnknownMatchException } from "@exceptions/championship/UnknownMatchException";
 import { UnknownPlayerException } from "@exceptions/championship/UnknownPlayerException";
 import { UnauthorizedActionException } from "@exceptions/actions/UnauthorizedActionException";
@@ -200,6 +201,85 @@ const playerLevelSubCommand = new SubSlashCommandOption(
 );
 
 /** ========================================================================
+ *  ==                            SUB-COMMAND                             ==
+ *  ==                           player status                            ==
+ *  ========================================================================
+ */
+const playerStatusSubCommandName = "status" as const;
+const playerStatusSubCommandNameLocalized: LocalizationMap = {
+    fr: "statut"
+};
+
+const playerStatusSubCommandDescription = "Return the status of the player";
+const playerStatusSubCommandDescriptionLocalized: LocalizationMap = {
+    fr: "Renvoie le statut du joueur"
+};
+
+const playerStatusOptionUserName = "player" as const;
+const playerStatusOptionUserNameLocalized: LocalizationMap = {
+    fr: "joueur"
+};
+const playerStatusOptionUserDescription = "The user to get the status";
+const playerStatusOptionUserDescriptionLocalized: LocalizationMap = {
+    fr: "Le joueur dont on veut le statut"
+};
+const playerStatusOptionUser = new UserCommandOption(
+    playerStatusOptionUserName, playerStatusOptionUserNameLocalized,
+    playerStatusOptionUserDescription, playerStatusOptionUserDescriptionLocalized,
+    true
+);
+
+const playerStatusSubCommand = new SubSlashCommandOption(
+    playerStatusSubCommandName, playerStatusSubCommandNameLocalized,
+    playerStatusSubCommandDescription, playerStatusSubCommandDescriptionLocalized,
+    {
+        [playerStatusOptionUser.name]: playerStatusOptionUser
+    },
+    async function (_client, interaction) {
+        if (!interaction.inCachedGuild()) {
+            throw new Error("The guild is not cached");
+        }
+
+        const admin = interaction.member;
+        if (!admin?.roles.cache.has(SUPPORT_ROLE_ID)) {
+            throw new UnauthorizedActionException();
+        }
+
+        const user = interaction.options.getUser(playerStatusOptionUser.name, true);
+        const [participant, matchmakingInProgress, matches] = await Promise.all([
+            ParticipantModel.findById(user.id),
+            MatchmakingService.instance.playerIsInQueue(user.id),
+            MatchService.instance.findAllPlayerMatches(user.id)
+        ]);
+        if (!participant) {
+            throw new UnknownPlayerException(user.id);
+        }
+
+
+        await interaction.reply({
+            ephemeral: true,
+            content: `# <@${user.id}>` +
+                "\n" +
+                "## Matchmaking\n" +
+                `- Plateforme : **${participant.platform}**\n` +
+                `- Est en recherche d'aversaires : **${matchmakingInProgress ? "Oui" : "Non"}**\n` +
+                `- Elo : **${participant.level}**\n` +
+                "\n" +
+                `## Matchs (${matches.length})\n` +
+                matches.map( match => {
+                    const opponent = match.players.find( player => player.participantId !== user.id );
+                    const opponentName = opponent ? `<@${opponent.participantId}>` : "Inconnu";
+
+                    const userWeapons = match.players.find( player => player.participantId === user.id )?.weapons;
+
+                    return `- ${opponentName}  •  ${userWeapons?.stringifyStatus()}`;
+                }).join("\n"),
+            allowedMentions: { parse: [] }
+        });
+    }
+);
+
+/** ========================================================================
  *  ==                           GROUP-COMMAND                            ==
  *  ==                               player                               ==
  *  ========================================================================
@@ -218,7 +298,8 @@ const playerGroupCommand = new SubSlashCommandGroupOption(
     playerSubCommandName, playerSubCommandNameLocalized,
     playerSubCommandDescription, playerSubCommandDescriptionLocalized,
     {
-        [playerLevelSubCommand.name]: playerLevelSubCommand
+        [playerLevelSubCommand.name]: playerLevelSubCommand,
+        [playerStatusSubCommand.name]: playerStatusSubCommand
     }
 );
 

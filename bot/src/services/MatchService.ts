@@ -192,6 +192,10 @@ export class MatchService {
         return new MatchMap(mapsWithCount[mapsWithCount.length - 1].name, mapsWithCount[mapsWithCount.length - 1].url);
     }
 
+    public async findAllPlayerMatches(id: string): Promise<MatchDocument[]> {
+        return MatchModel.find({ "players.participant": id }).exec();
+    }
+
     public getWeaponsCategories(): CategoryRawData[] {
         return require('../data/weapons.json');
     }

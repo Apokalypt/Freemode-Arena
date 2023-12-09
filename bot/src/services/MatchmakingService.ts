@@ -1,11 +1,9 @@
 import type { Guild } from "discord.js";
-import { MATCHMAKING_TICKET_STATUS, Platforms, PLATFORMS_ROLES } from "@enums";
-import {
-    MatchmakingTicketDocument,
-    MatchmakingTicketModel
-} from "@models/championship/MatchmakingTicket";
 import { MatchModel } from "@models/championship/Match";
 import { Participant } from "@models/championship/Participant";
+import { MatchmakingTicketDocument, MatchmakingTicketModel } from "@models/championship/MatchmakingTicket";
+import { DEFAULT_USER_LEVEL, KNOWN_USERS_LEVEL } from "@constants";
+import { MATCHMAKING_TICKET_STATUS, Platforms, PLATFORMS_ROLES } from "@enums";
 
 export class MatchmakingService {
     private static _instance: MatchmakingService;
@@ -35,6 +33,15 @@ export class MatchmakingService {
         return ticket;
     }
 
+    public async playerIsInQueue(playerId: string): Promise<boolean> {
+        const res = await MatchmakingTicketModel.exists({
+            participant: playerId,
+            status: MATCHMAKING_TICKET_STATUS.WAITING
+        }).exec();
+
+        return res != null;
+    }
+
     public async createTicket(player: Participant): Promise<MatchmakingTicketDocument | null> {
         return MatchmakingTicketModel.create({
             platform: player.platform,
@@ -48,5 +55,9 @@ export class MatchmakingService {
 
         return PLATFORMS_ROLES.filter( conf => member.roles.cache.has(conf.role) )
             .map( conf => conf.platform );
+    }
+
+    public getUserLevel(id: string): number {
+        return KNOWN_USERS_LEVEL[id] || DEFAULT_USER_LEVEL;
     }
 }

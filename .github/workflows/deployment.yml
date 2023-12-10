@@ -1,8 +1,12 @@
-name: Deployment
+name: Bot Deployment
 
 on:
   release:
     types: [published]
+
+defaults:
+  run:
+    working-directory: ./bot
 
 jobs:
   checks-env:

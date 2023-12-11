@@ -6,7 +6,7 @@ on:
 
 defaults:
   run:
-    working-directory: ./bot
+    working-directory: bot
 
 jobs:
   checks-env:

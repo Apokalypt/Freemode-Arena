@@ -1,0 +1,11 @@
+.idea
+node_modules
+
+# Build files
+dist
+
+# Dotenv environment variables file
+.env*
+.flaskenv*
+!.env.project
+!.env.vault

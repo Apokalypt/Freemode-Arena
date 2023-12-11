@@ -147,7 +147,9 @@ class ValidateWeaponsSelectionActionExecutionContext<IsValidated extends true | 
                         ]
                     }
                 ]
-            }).catch( _ => null );
+            })
+                .then( msg => msg.pin() )
+                .catch( _ => null );
         });
 
         const buttonToSelectWeapons: APIButtonComponentWithCustomId = {

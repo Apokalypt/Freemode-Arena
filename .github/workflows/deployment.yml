@@ -4,10 +4,6 @@ on:
   release:
     types: [published]
 
-defaults:
-  run:
-    working-directory: ./bot
-
 jobs:
   checks-env:
     runs-on: ubuntu-latest
@@ -71,14 +67,17 @@ jobs:
           node-version: '18.x'
 
       - name: 'Build the project'
+        working-directory: bot
         run: npm run build
 
       - name: 'Remove dev dependencies and scripts from package.json'
+        working-directory: bot
         run: |
           jq 'del(.devDependencies,.scripts)' dist/package.json > dist/package.json.tmp
           mv dist/package.json.tmp dist/package.json
 
       - name: 'Generate package-lock.json in build directory'
+        working-directory: bot
         run: |
           cd dist
           npm install --production
@@ -89,7 +88,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: build-artifact
-          path: ./dist
+          path: ./bot/dist
           if-no-files-found: error
 
   deploy:

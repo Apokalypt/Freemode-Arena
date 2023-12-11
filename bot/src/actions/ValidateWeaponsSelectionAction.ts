@@ -4,6 +4,7 @@ import { APIButtonComponentWithCustomId, ButtonStyle, ChannelType, ComponentType
 import { getDiscriminatorModelForClass } from "@typegoose/typegoose";
 import { Action, ActionExecutionContext, ActionModel, InputAction, InputActionValidated } from "@models/action/Action";
 import { IntermediateModel } from "@decorators/database";
+import { DisplayMatchSelectionAction } from "./DisplayMatchSelectionAction";
 import { ShowWeaponCategorySelectionAction } from "./ShowWeaponCategorySelectionAction";
 import { ACTION_CODES, DATABASE_MODELS } from "@enums";
 import { ParticipantModel } from "@models/championship/Participant";
@@ -13,7 +14,7 @@ import { InvalidActionException } from "@exceptions/actions/InvalidActionExcepti
 import { NotPlayerInMatchException } from "@exceptions/championship/NotPlayerInMatchException";
 import { UserNotRegisteredException } from "@exceptions/championship/UserNotRegisteredException";
 import { InvalidPlayerStateException } from "@exceptions/championship/InvalidPlayerStateException";
-import { EMOJI_MATCHMAKING, FAQ_CHANNEL_ID } from "@constants";
+import { EMOJI_INFORMATION, EMOJI_MATCHMAKING, EMOJI_RIGHT_ARROW, EMOJI_WARNING, FAQ_CHANNEL_ID } from "@constants";
 
 type ValidateWeaponsSelectionActionProperties = WithoutModifiers<ValidateWeaponsSelectionAction>;
 
@@ -105,15 +106,28 @@ class ValidateWeaponsSelectionActionExecutionContext<IsValidated extends true | 
                 return;
             }
 
+            const displayMatchSelectionAction = new DisplayMatchSelectionAction({ matchId: updatedMatch._id.toString() });
+            const buttonToDisplaySelection: APIButtonComponentWithCustomId = {
+                type: ComponentType.Button,
+                style: ButtonStyle.Primary,
+                label: "Voir la sélection de l'adversaire",
+                custom_id: "dummy-id-0",
+            };
+            this._client.actions.linkComponentToAction(buttonToDisplaySelection, displayMatchSelectionAction);
+
             await thread.send({
-                content: "# Le match peut commencer!\n" +
-                    "** **\n" +
-                    "## Sélections\n" +
-                    `### - <@${updatedMatch.players[0].participantId}>\n` +
-                    `${updatedMatch.players[0].weapons.stringifySelection()}` +
-                    `### - <@${updatedMatch.players[1].participantId}>\n` +
-                    `${updatedMatch.players[1].weapons.stringifySelection()}\n` +
-                    `<:white_right_arrow:1182354037346148482> À vous de convenir d'une date pour effectuer votre match ${EMOJI_MATCHMAKING}`,
+                content: `# À vos armes <@${updatedMatch.players[0].participantId}> & <@${updatedMatch.players[1].participantId}> !\n` +
+                    `${EMOJI_INFORMATION} *Pensez à consulter le règlement complet pour éviter de prendre des avertissements ou de voir le match se faire invalider...*\n` +
+                    "\n" +
+                    `## ${EMOJI_WARNING} Rappel - [clique ici pour le règlement complet](<https://discord.com/channels/547113077506834473/1180875466559737896>)\n` +
+                    "- __Enregistrez__ votre gameplay\n" +
+                    "- Le match doit durer __15 minutes__\n" +
+                    "- Avant de commencer le match, vous devez __sauter d'un hélicoptère__\n" +
+                    "- Mode de visée __libre__ obligatoire\n" +
+                    "- S’équiper d’une __tenue d’extermination__ ou de __plongée sans casque__\n" +
+                    `- Consulter la [FAQ](<https://discord.com/channels/${updatedMatch.channel.guildId}/${FAQ_CHANNEL_ID}>) (99% des questions y sont répondues)\n` +
+                    "\n" +
+                    `## ${EMOJI_RIGHT_ARROW} Dorénavant, convenez d'une date pour effectuer votre match ${EMOJI_MATCHMAKING}`,
                 embeds: [
                     new EmbedBuilder()
                         .setTitle("Lieu du match")
@@ -128,7 +142,8 @@ class ValidateWeaponsSelectionActionExecutionContext<IsValidated extends true | 
                                 style: ButtonStyle.Link,
                                 label: "Règlement + FAQ",
                                 url: `https://discord.com/channels/${thread.guildId}/${FAQ_CHANNEL_ID}`
-                            }
+                            },
+                            buttonToDisplaySelection
                         ]
                     }
                 ]

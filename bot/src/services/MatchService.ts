@@ -127,6 +127,10 @@ export class MatchService {
         return match;
     }
 
+    public async getMatchFromId(id: string): Promise<MatchDocument | null> {
+        return MatchModel.findById(id).exec();
+    }
+
     public async getMatchFromDiscordChannel(guildId: string, threadId: string): Promise<MatchDocument | null> {
         return MatchModel.findOne({
             "channel.guildId": guildId,

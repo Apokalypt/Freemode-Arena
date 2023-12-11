@@ -22,7 +22,7 @@
   "homepage": "https://github.com/Apokalypt/Whiteout-Survival-Bot#readme",
   "dependencies": {
     "@typegoose/typegoose": "^11.7.1",
-    "discord.js": "^14.13.0",
+    "discord.js": "^14.14.1",
     "dotenv": "^16.3.1",
     "module-alias": "^2.2.3",
     "uuid": "^9.0.1",

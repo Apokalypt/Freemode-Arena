@@ -10,7 +10,7 @@ import { MatchmakingService } from "@services/MatchmakingService";
 import { UnknownMatchException } from "@exceptions/championship/UnknownMatchException";
 import { UnknownPlayerException } from "@exceptions/championship/UnknownPlayerException";
 import { UnauthorizedActionException } from "@exceptions/actions/UnauthorizedActionException";
-import { SUPPORT_ROLE_ID } from "@constants";
+import { EMOJI_GREEN_CHECK, EMOJI_RED_CROSS, SUPPORT_ROLE_ID } from "@constants";
 
 
 /** ========================================================================
@@ -226,7 +226,7 @@ const playerStatusOptionUserDescriptionLocalized: LocalizationMap = {
 const playerStatusOptionUser = new UserCommandOption(
     playerStatusOptionUserName, playerStatusOptionUserNameLocalized,
     playerStatusOptionUserDescription, playerStatusOptionUserDescriptionLocalized,
-    true
+    false
 );
 
 const playerStatusSubCommand = new SubSlashCommandOption(
@@ -245,37 +245,50 @@ const playerStatusSubCommand = new SubSlashCommandOption(
             throw new UnauthorizedActionException();
         }
 
-        const user = interaction.options.getUser(playerStatusOptionUser.name, true);
-        const [participant, matchmakingInProgress, matches] = await Promise.all([
-            ParticipantModel.findById(user.id),
-            MatchmakingService.instance.playerIsInQueue(user.id),
-            MatchService.instance.findAllPlayerMatches(user.id)
-        ]);
-        if (!participant) {
-            throw new UnknownPlayerException(user.id);
+        const user = interaction.options.getUser(playerStatusOptionUser.name, false);
+        if (user) {
+            const [participant, matchmakingInProgress, matches] = await Promise.all([
+                ParticipantModel.findById(user.id),
+                MatchmakingService.instance.playerIsInQueue(user.id),
+                MatchService.instance.findAllPlayerMatches(user.id)
+            ]);
+            if (!participant) {
+                throw new UnknownPlayerException(user.id);
+            }
+
+
+            await interaction.reply({
+                ephemeral: true,
+                content: `# <@${user.id}>` +
+                    "\n" +
+                    "## Matchmaking\n" +
+                    `- Plateforme : **${participant.platform}**\n` +
+                    `- Est en recherche d'aversaires : **${matchmakingInProgress ? "Oui" : "Non"}**\n` +
+                    `- Elo : **${participant.level}**\n` +
+                    "\n" +
+                    `## Matchs (${matches.length})\n` +
+                    matches.map( match => {
+                        const opponent = match.players.find( player => player.participantId !== user.id );
+                        const opponentName = opponent ? `<@${opponent.participantId}>` : "Inconnu";
+
+                        const userWeapons = match.players.find( player => player.participantId === user.id )?.weapons;
+
+                        return `- ${opponentName}  •  ${userWeapons?.stringifyStatus()}`;
+                    }).join("\n"),
+                allowedMentions: { parse: [] }
+            });
+        } else {
+            const participantsStatus = await MatchmakingService.instance.getFullMatchmakingStatus();
+
+            await interaction.reply({
+                ephemeral: true,
+                content: `# Matchmaking des joueurs\n` +
+                    participantsStatus.map( participantStatus => {
+                        return `- ${participantStatus.hasWaitingTicket ? EMOJI_GREEN_CHECK : EMOJI_RED_CROSS}  •  <@${participantStatus._id}>`;
+                    }).join("\n"),
+                allowedMentions: { parse: [] }
+            });
         }
-
-
-        await interaction.reply({
-            ephemeral: true,
-            content: `# <@${user.id}>` +
-                "\n" +
-                "## Matchmaking\n" +
-                `- Plateforme : **${participant.platform}**\n` +
-                `- Est en recherche d'aversaires : **${matchmakingInProgress ? "Oui" : "Non"}**\n` +
-                `- Elo : **${participant.level}**\n` +
-                "\n" +
-                `## Matchs (${matches.length})\n` +
-                matches.map( match => {
-                    const opponent = match.players.find( player => player.participantId !== user.id );
-                    const opponentName = opponent ? `<@${opponent.participantId}>` : "Inconnu";
-
-                    const userWeapons = match.players.find( player => player.participantId === user.id )?.weapons;
-
-                    return `- ${opponentName}  •  ${userWeapons?.stringifyStatus()}`;
-                }).join("\n"),
-            allowedMentions: { parse: [] }
-        });
     }
 );
 

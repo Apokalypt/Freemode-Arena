@@ -1,6 +1,6 @@
 import type { Guild } from "discord.js";
 import { MatchModel } from "@models/championship/Match";
-import { Participant } from "@models/championship/Participant";
+import { Participant, ParticipantModel } from "@models/championship/Participant";
 import { MatchmakingTicketDocument, MatchmakingTicketModel } from "@models/championship/MatchmakingTicket";
 import { DEFAULT_USER_LEVEL, KNOWN_USERS_LEVEL } from "@constants";
 import { MATCHMAKING_TICKET_STATUS, Platforms, PLATFORMS_ROLES } from "@enums";
@@ -31,6 +31,27 @@ export class MatchmakingService {
         ).exec();
 
         return ticket;
+    }
+
+    public async getFullMatchmakingStatus(): Promise<{ _id: string, hasWaitingTicket: boolean }[]> {
+        return ParticipantModel.aggregate([
+            {
+                $lookup: {
+                    from: "matchmaking_tickets",
+                    localField: "_id",
+                    foreignField: "participant",
+                    as: "tickets"
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    hasWaitingTicket: {
+                        $in: ["waiting", "$tickets.status"]
+                    }
+                }
+            }
+        ]);
     }
 
     public async playerIsInQueue(playerId: string): Promise<boolean> {

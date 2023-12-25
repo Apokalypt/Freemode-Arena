@@ -16,6 +16,7 @@ import { UserNotRegisteredException } from "@exceptions/championship/UserNotRegi
 import { InvalidPlayerStateException } from "@exceptions/championship/InvalidPlayerStateException";
 import { ACTION_CODES, DATABASE_MODELS } from "@enums";
 import { IntermediateModel } from "@decorators/database";
+import { CHAMPIONSHIP_END_DATE } from "@constants";
 
 type ShowWeaponsSelectionActionProperties = WithoutModifiers<ShowWeaponsSelectionAction>;
 
@@ -54,6 +55,10 @@ class ShowWeaponsSelectionActionExecutionContext<IsValidated extends true | fals
 
     protected override async _checkActionValidity(): Promise<InputShowWeaponsSelectionActionValidated> {
         const inputValidated = await super._checkActionValidity();
+
+        if (CHAMPIONSHIP_END_DATE.getTime() < Date.now()) {
+            throw new InvalidActionException("Le championnat est terminé.");
+        }
 
         if (!inputValidated.guildId) {
             throw new InvalidActionException("L'action doit être exécutée dans un serveur.");

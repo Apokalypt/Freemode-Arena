@@ -2,7 +2,8 @@ import { ButtonComponentData, ButtonStyle, ComponentType, PermissionFlagsBits } 
 import { MessageContextMenuCommand } from "@models/command/MessageContextMenuCommand";
 import { RegisterForChampionshipAction } from "../../actions/RegisterForChampionshipAction";
 import { UnknownGuildException } from "@exceptions/guild/UnknownGuildException";
-import { FAQ_CHANNEL_ID } from "@constants";
+import { CHAMPIONSHIP_END_DATE, FAQ_CHANNEL_ID } from "@constants";
+import { InvalidActionException } from "@exceptions/actions/InvalidActionException";
 
 const commandName = "Invite for FA" as const;
 
@@ -22,6 +23,10 @@ export = new MessageContextMenuCommand(
     async function(client, interaction) {
         if (!interaction.inCachedGuild()) {
             throw new UnknownGuildException(interaction.guildId ?? "*Unknown*");
+        }
+
+        if (CHAMPIONSHIP_END_DATE.getTime() < Date.now()) {
+            throw new InvalidActionException("Le championnat est terminé.");
         }
 
         const registerButton: ButtonComponentData = {

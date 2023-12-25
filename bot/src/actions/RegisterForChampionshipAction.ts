@@ -13,7 +13,7 @@ import { InvalidPlayerStateException } from "@exceptions/championship/InvalidPla
 import { RegistrationRefusedException } from "@exceptions/championship/RegistrationRefusedException";
 import { ACTION_CODES, DATABASE_MODELS, Platforms } from "@enums";
 import {
-    CHAMPIONSHIP_CHANNEL_ID,
+    CHAMPIONSHIP_CHANNEL_ID, CHAMPIONSHIP_END_DATE,
     CHAMPIONSHIP_ROLE_ID, EMOJI_FAQ, EMOJI_MATCHMAKING, EMOJI_SUPPORT,
     FAQ_CHANNEL_ID,
     SUPPORT_CHANNEL_ID,
@@ -37,14 +37,18 @@ export class RegisterForChampionshipAction extends Action<"ACTION_REGISTER_CHAMP
     }
 }
 
-type InputRegisterForChampionshipAction = InputAction<"ACTION_REGISTER_CHAMPIONSHIP"> & { };
-type InputRegisterForChampionshipActionValidated = InputActionValidated<"ACTION_REGISTER_CHAMPIONSHIP"> & { };
+type InputRegisterForChampionshipAction = InputAction<"ACTION_REGISTER_CHAMPIONSHIP">;
+type InputRegisterForChampionshipActionValidated = InputActionValidated<"ACTION_REGISTER_CHAMPIONSHIP">;
 
 class RegisterForChampionshipActionExecutionContext<IsValidated extends true | false = false>
     extends ActionExecutionContext<IsValidated, InputRegisterForChampionshipAction, InputRegisterForChampionshipActionValidated, "ACTION_REGISTER_CHAMPIONSHIP"> {
 
     protected override async _checkActionValidity(): Promise<InputRegisterForChampionshipActionValidated> {
         const inputValidated = await super._checkActionValidity();
+
+        if (CHAMPIONSHIP_END_DATE.getTime() < Date.now()) {
+            throw new InvalidActionException("Le championnat est terminé.");
+        }
 
         if (!inputValidated.guildId) {
             throw new InvalidActionException("L'action doit être exécutée dans un serveur.");

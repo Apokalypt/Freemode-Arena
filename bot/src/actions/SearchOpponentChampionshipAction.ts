@@ -10,7 +10,7 @@ import { ParticipantModel } from "@models/championship/Participant";
 import { InvalidActionException } from "@exceptions/actions/InvalidActionException";
 import { UserNotRegisteredException } from "@exceptions/championship/UserNotRegisteredException";
 import { ACTION_CODES, DATABASE_MODELS } from "@enums";
-import { EMOJI_INFORMATION, FAQ_CHANNEL_ID } from "@constants";
+import { CHAMPIONSHIP_END_DATE, EMOJI_INFORMATION, FAQ_CHANNEL_ID } from "@constants";
 
 type SearchOpponentChampionshipActionProperties = WithoutModifiers<SearchOpponentChampionshipAction>;
 
@@ -29,14 +29,18 @@ export class SearchOpponentChampionshipAction extends Action<"ACTION_SEARCH_OPPO
     }
 }
 
-type InputSearchOpponentChampionshipAction = InputAction<"ACTION_SEARCH_OPPONENT_CHAMPIONSHIP"> & { };
-type InputSearchOpponentChampionshipActionValidated = InputActionValidated<"ACTION_SEARCH_OPPONENT_CHAMPIONSHIP"> & { };
+type InputSearchOpponentChampionshipAction = InputAction<"ACTION_SEARCH_OPPONENT_CHAMPIONSHIP">;
+type InputSearchOpponentChampionshipActionValidated = InputActionValidated<"ACTION_SEARCH_OPPONENT_CHAMPIONSHIP">;
 
 class SearchOpponentChampionshipActionExecutionContext<IsValidated extends true | false = false>
     extends ActionExecutionContext<IsValidated, InputSearchOpponentChampionshipAction, InputSearchOpponentChampionshipActionValidated, "ACTION_SEARCH_OPPONENT_CHAMPIONSHIP"> {
 
     protected override async _checkActionValidity(): Promise<InputSearchOpponentChampionshipActionValidated> {
         const inputValidated = await super._checkActionValidity();
+
+        if (CHAMPIONSHIP_END_DATE.getTime() < Date.now()) {
+            throw new InvalidActionException("Le championnat est terminé.");
+        }
 
         if (!inputValidated.guildId) {
             throw new InvalidActionException("L'action doit être exécutée dans un serveur.");
@@ -55,7 +59,7 @@ class SearchOpponentChampionshipActionExecutionContext<IsValidated extends true 
 
         const ticket = await MatchmakingService.instance.searchTicket(participant);
         if (ticket) {
-            const match = await MatchService.instance.createMatchFromTicket(this._client, this._interaction!.guild!, ticket, participant);
+            const match = await MatchService.instance.createMatchFromTicket(this._client, this._interaction.guild, ticket, participant);
 
             await this._answer({
                 content: "## Adversaire trouvé!\n" +

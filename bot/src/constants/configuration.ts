@@ -54,7 +54,7 @@ const KNOWN_USERS_LEVEL: Record<string, number> = {
 };
 const DEFAULT_USER_LEVEL = 0;
 
-const CHAMPIONSHIP_END_DATE = new Date("2022-12-26T21:30:00.000Z"); // 26 december 2023 22h30 UTC+1
+const CHAMPIONSHIP_END_DATE = new Date("2023-12-26T21:30:00.000Z"); // 26 december 2023 22h30 UTC+1
 
 export {
     SUPPORT_ROLE_ID,

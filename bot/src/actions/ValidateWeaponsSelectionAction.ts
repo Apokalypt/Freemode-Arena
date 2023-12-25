@@ -14,7 +14,14 @@ import { InvalidActionException } from "@exceptions/actions/InvalidActionExcepti
 import { NotPlayerInMatchException } from "@exceptions/championship/NotPlayerInMatchException";
 import { UserNotRegisteredException } from "@exceptions/championship/UserNotRegisteredException";
 import { InvalidPlayerStateException } from "@exceptions/championship/InvalidPlayerStateException";
-import { EMOJI_INFORMATION, EMOJI_MATCHMAKING, EMOJI_RIGHT_ARROW, EMOJI_WARNING, FAQ_CHANNEL_ID } from "@constants";
+import {
+    CHAMPIONSHIP_END_DATE,
+    EMOJI_INFORMATION,
+    EMOJI_MATCHMAKING,
+    EMOJI_RIGHT_ARROW,
+    EMOJI_WARNING,
+    FAQ_CHANNEL_ID
+} from "@constants";
 
 type ValidateWeaponsSelectionActionProperties = WithoutModifiers<ValidateWeaponsSelectionAction>;
 
@@ -33,14 +40,18 @@ export class ValidateWeaponsSelectionAction extends Action<"ACTION_VALIDATE_WEAP
     }
 }
 
-type InputValidateWeaponsSelectionAction = InputAction<"ACTION_VALIDATE_WEAPONS_SELECTION"> & { };
-type InputValidateWeaponsSelectionActionValidated = InputActionValidated<"ACTION_VALIDATE_WEAPONS_SELECTION"> & { };
+type InputValidateWeaponsSelectionAction = InputAction<"ACTION_VALIDATE_WEAPONS_SELECTION">;
+type InputValidateWeaponsSelectionActionValidated = InputActionValidated<"ACTION_VALIDATE_WEAPONS_SELECTION">;
 
 class ValidateWeaponsSelectionActionExecutionContext<IsValidated extends true | false = false>
     extends ActionExecutionContext<IsValidated, InputValidateWeaponsSelectionAction, InputValidateWeaponsSelectionActionValidated, "ACTION_VALIDATE_WEAPONS_SELECTION"> {
 
     protected override async _checkActionValidity(): Promise<InputValidateWeaponsSelectionActionValidated> {
         const inputValidated = await super._checkActionValidity();
+
+        if (CHAMPIONSHIP_END_DATE.getTime() < Date.now()) {
+            throw new InvalidActionException("Le championnat est terminé.");
+        }
 
         if (!inputValidated.guildId) {
             throw new InvalidActionException("L'action doit être exécutée dans un serveur.");

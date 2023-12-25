@@ -15,6 +15,7 @@ import { UserNotRegisteredException } from "@exceptions/championship/UserNotRegi
 import { InvalidPlayerStateException } from "@exceptions/championship/InvalidPlayerStateException";
 import { ACTION_CODES, DATABASE_MODELS } from "@enums";
 import { IntermediateModel } from "@decorators/database";
+import { CHAMPIONSHIP_END_DATE } from "@constants";
 
 type ShowWeaponCategorySelectionActionProperties = WithoutModifiers<ShowWeaponCategorySelectionAction>;
 
@@ -33,14 +34,18 @@ export class ShowWeaponCategorySelectionAction extends Action<"ACTION_SHOW_WEAPO
     }
 }
 
-type InputShowWeaponCategorySelectionAction = InputAction<"ACTION_SHOW_WEAPON_CATEGORY_SELECTION"> & { };
-type InputShowWeaponCategorySelectionActionValidated = InputActionValidated<"ACTION_SHOW_WEAPON_CATEGORY_SELECTION"> & { };
+type InputShowWeaponCategorySelectionAction = InputAction<"ACTION_SHOW_WEAPON_CATEGORY_SELECTION">;
+type InputShowWeaponCategorySelectionActionValidated = InputActionValidated<"ACTION_SHOW_WEAPON_CATEGORY_SELECTION">;
 
 class ShowWeaponCategorySelectionActionExecutionContext<IsValidated extends true | false = false>
     extends ActionExecutionContext<IsValidated, InputShowWeaponCategorySelectionAction, InputShowWeaponCategorySelectionActionValidated, "ACTION_SHOW_WEAPON_CATEGORY_SELECTION"> {
 
     protected override async _checkActionValidity(): Promise<InputShowWeaponCategorySelectionActionValidated> {
         const inputValidated = await super._checkActionValidity();
+
+        if (CHAMPIONSHIP_END_DATE.getTime() < Date.now()) {
+            throw new InvalidActionException("Le championnat est terminé.");
+        }
 
         if (!inputValidated.guildId) {
             throw new InvalidActionException("L'action doit être exécutée dans un serveur.");

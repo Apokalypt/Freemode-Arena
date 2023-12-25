@@ -52,7 +52,7 @@ export class BotClient {
             ]
         });
 
-        const bot = new BotClient(client);
+        const bot = new BotClient(client as Client<true>);
         await client.login(token);
         return bot;
     }

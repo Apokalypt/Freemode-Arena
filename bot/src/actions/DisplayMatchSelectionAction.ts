@@ -9,7 +9,7 @@ import { PropertyNotInjectableFromInteraction } from "@models/action/ActionPrope
 import { UnknownMatchException } from "@exceptions/championship/UnknownMatchException";
 import { InvalidActionException } from "@exceptions/actions/InvalidActionException";
 import { NotPlayerInMatchException } from "@exceptions/championship/NotPlayerInMatchException";
-import { SUPPORT_ROLE_ID } from "@constants";
+import { CHAMPIONSHIP_END_DATE, SUPPORT_ROLE_ID } from "@constants";
 import { ACTION_CODES, DATABASE_MODELS } from "@enums";
 
 type DisplayMatchSelectionActionProperties = WithoutModifiers<DisplayMatchSelectionAction>;
@@ -69,6 +69,10 @@ class DisplayMatchSelectionActionExecutionContext<IsValidated extends true | fal
 
     protected override async _checkActionValidity(): Promise<InputDisplayMatchSelectionActionValidated> {
         const inputValidated = await super._checkActionValidity();
+
+        if (CHAMPIONSHIP_END_DATE.getTime() < Date.now()) {
+            throw new InvalidActionException("Le championnat est terminé.");
+        }
 
         if (!inputValidated.guildId) {
             throw new InvalidActionException("L'action doit être exécutée dans un serveur.");

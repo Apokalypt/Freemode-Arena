@@ -14,6 +14,18 @@ export = new SlashCommand(
     description, undefined,
     { },
     async function (_client, interaction) {
+        if (process.env.NODE_ENV !== "development") {
+            interaction.reply({
+                embeds: [
+                    new EmbedBuilder()
+                        .setTitle("This command can only be used in development mode")
+                        .setColor(COLOR_INFO)
+                ],
+                ephemeral: true
+            });
+            return;
+        }
+
         await Promise.allSettled([
             MatchModel.deleteMany({ }),
             MatchmakingTicketModel.deleteMany({ }),

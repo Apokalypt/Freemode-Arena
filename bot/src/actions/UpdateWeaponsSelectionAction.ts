@@ -21,6 +21,7 @@ import { UnknownMatchException } from "@exceptions/championship/UnknownMatchExce
 import { NotPlayerInMatchException } from "@exceptions/championship/NotPlayerInMatchException";
 import { UserNotRegisteredException } from "@exceptions/championship/UserNotRegisteredException";
 import { InvalidPlayerStateException } from "@exceptions/championship/InvalidPlayerStateException";
+import { CHAMPIONSHIP_END_DATE } from "@constants";
 
 type UpdateWeaponsSelectionActionProperties = WithoutModifiers<UpdateWeaponsSelectionAction>;
 
@@ -93,6 +94,10 @@ class UpdateWeaponsSelectionActionExecutionContext<IsValidated extends true | fa
 
     protected override async _checkActionValidity(): Promise<InputUpdateWeaponsSelectionActionValidated> {
         const inputValidated = await super._checkActionValidity();
+
+        if (CHAMPIONSHIP_END_DATE.getTime() < Date.now()) {
+            throw new InvalidActionException("Le championnat est terminé.");
+        }
 
         if (!inputValidated.guildId) {
             throw new InvalidActionException("L'action doit être exécutée dans un serveur.");

@@ -10,3 +10,5 @@ export const EMOJI_WARNING = new EmojiSerializable(true, "warning", "11837093644
 export const EMOJI_RIGHT_ARROW = new EmojiSerializable(false, "white_right_arrow", "1182354037346148482");
 export const EMOJI_GREEN_CHECK = new EmojiSerializable(false, "green_check_mark", "1183738050237452358");
 export const EMOJI_RED_CROSS = new EmojiSerializable(false, "red_cross_mark", "1183738046928130099");
+export const EMOJI_DOLLAR = new EmojiSerializable(false, "fa_dollar", "1269579540334907406");
+export const EMOJI_VALIDATED = new EmojiSerializable(false, "green_check_mark", "1183738050237452358");

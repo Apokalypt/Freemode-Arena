@@ -11,7 +11,14 @@ import { SubSlashCommandOption } from "@models/command/options/executable/SubSla
 import { RegisterForChampionshipAction } from "../../actions/RegisterForChampionshipAction";
 import { SearchOpponentChampionshipAction } from "../../actions/SearchOpponentChampionshipAction";
 import { InvalidActionException } from "@exceptions/actions/InvalidActionException";
-import { CHAMPIONSHIP_CHANNEL_ID, EMOJI_FAQ, EMOJI_INFORMATION, EMOJI_MATCHMAKING, FAQ_CHANNEL_ID } from "@constants";
+import {
+    CHAMPIONSHIP_CHANNEL_ID,
+    EMOJI_DOLLAR,
+    EMOJI_FAQ,
+    EMOJI_INFORMATION,
+    EMOJI_MATCHMAKING, EMOJI_VALIDATED,
+    FAQ_CHANNEL_ID
+} from "@constants";
 
 /**
  * [SUB-COMMAND] - Event registering
@@ -54,7 +61,7 @@ const sc_RegisterChampionshipCommand = new SubSlashCommandOption(
             content: "# Freemode Arena 5 🏆 \n" +
                 "La nouvelle saison de Freemode Arena arrive sur Glitch GTA France !\n" +
                 "C'est le moment de se battre et de gagner des duels. Inscris-toi et affronte d'autres participants " +
-                "pour remporter un titre, et potentiellement des récompenses <:23_Dollar:1229109417497202804> \n" +
+                `pour remporter un titre, et potentiellement des récompenses ${EMOJI_DOLLAR} !\n` +
                 "\n" +
                 "# Les récompenses 🎁 \n" +
                 "- Cartes cadeaux pour la majorité des participants\n" +
@@ -134,7 +141,7 @@ const sc_MatchmakingChampionshipCommand = new SubSlashCommandOption(
 
         await channel.send({
             content: "# LANCER UN MATCH 🏆 \n" +
-                "Faîtes un maximum de matchs contre les autres participants ! **Vous remporterez davantage de points 📈  ET de cashprize <:23_Dollar:1229109417497202804> **\n" +
+                `Faîtes un maximum de matchs contre les autres participants ! **Vous remporterez davantage de points 📈  ET de cashprize ${EMOJI_DOLLAR} **\n` +
                 "\n" +
                 "## Clique sur le bouton \"Je Cherche Un Adversaire\"\n" +
                 "_Le bot cherche un adversaire sur la même plateforme que toi_\n" +
@@ -143,7 +150,7 @@ const sc_MatchmakingChampionshipCommand = new SubSlashCommandOption(
                 "## Une fois qu'un adversaire est trouvé, vous êtes ajoutés ensemble dans un fil de discussion.\n" +
                 "1. Sélectionnez vos armes 🔫 \n" +
                 "2. Planifiez votre match 📆 \n" +
-                "3. Validez votre enregistrement <:02_Accepter:1088997177935794257> \n" +
+                `3. Validez votre enregistrement ${EMOJI_VALIDATED}` +
                 "\n" +
                 "Maintenant, n'attendez plus et lancez un match via \"Chercher un adversaire\" ⚔️",
             components: [

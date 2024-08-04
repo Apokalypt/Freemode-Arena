@@ -1,7 +1,7 @@
 {
   "restartable": "rs",
   "ignore": [".git", "node_modules/", "dist/", "coverage/"],
-  "watch": ["src/"],
+  "watch": ["src/", ".env", ".env.vault"],
   "execMap": {
     "ts": "node --trace-warnings -r ts-node/register"
   },

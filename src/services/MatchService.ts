@@ -1,4 +1,3 @@
-import type { APIActionRowComponent, APIMessageActionRowComponent } from "discord-api-types/v10";
 import type { ParticipantDocument } from "@models/championship/Participant";
 import path from "path";
 import { isDocument } from "@typegoose/typegoose";
@@ -9,7 +8,8 @@ import {
     ComponentType, EmbedBuilder,
     Guild,
     InteractionButtonComponentData,
-    type InteractionReplyOptions
+    type InteractionReplyOptions,
+    type APIActionRowComponent, type APIMessageActionRowComponent
 } from "discord.js";
 import {
     BASE_TOKENS_COUNT,

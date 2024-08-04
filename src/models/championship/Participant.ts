@@ -35,4 +35,4 @@ export class Participant extends TimeStamps {
 }
 
 export const ParticipantModel = getModelForClass(Participant);
-export type ParticipantDocument = DocumentType<Participant, string>;
+export type ParticipantDocument = DocumentType<Participant>;

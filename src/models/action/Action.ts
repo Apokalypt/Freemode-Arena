@@ -1,4 +1,5 @@
 import type {
+    APIMessageActionRowComponent,
     APISelectMenuOption,
     BaseMessageOptions,
     Collection,
@@ -415,29 +416,24 @@ export abstract class ActionExecutionContext<
     protected async _askForStringSelection(data: AskSelectionData & { maxNumberOfOptions?: number }): Promise<string[]>
     protected async _askForStringSelection(data: AskSelectionData): Promise<string | string[] | null> {
         const uid = v4();
-        const messageData: BaseMessageOptions & { ephemeral: true } = {
-            embeds: [
-                { title: data.title, description: data.description, color: COLOR_INFO }
-            ],
-            components: [
-                {
-                    type: ComponentType.ActionRow,
-                    components: [
-                        {
-                            type: ComponentType.StringSelect,
-                            custom_id: `local-${uid}-select`,
-                            options: data.options,
-                            placeholder: data.placeholder ?? "Choisissez une option",
-                            min_values: data.minNumberOfOptions ?? 1,
-                            max_values: data.maxNumberOfOptions ?? data.options.length
-                        }
-                    ]
-                }
-            ],
-            ephemeral: true
-        };
+
+        const components: APIActionRowComponent<APIMessageActionRowComponent>[] = [
+            {
+                type: ComponentType.ActionRow,
+                components: [
+                    {
+                        type: ComponentType.StringSelect,
+                        custom_id: `local-${uid}-select`,
+                        options: data.options,
+                        placeholder: data.placeholder ?? "Choisissez une option",
+                        min_values: data.minNumberOfOptions ?? 1,
+                        max_values: data.maxNumberOfOptions ?? data.options.length
+                    }
+                ]
+            }
+        ];
         if (data.minNumberOfOptions === 0) {
-            messageData.components?.push({
+            components.push({
                 type: ComponentType.ActionRow,
                 components: [
                     {
@@ -449,6 +445,14 @@ export abstract class ActionExecutionContext<
                 ]
             });
         }
+
+        const messageData: BaseMessageOptions & { ephemeral: true } = {
+            embeds: [
+                { title: data.title, description: data.description, color: COLOR_INFO }
+            ],
+            components,
+            ephemeral: true
+        };
 
         const [interaction, message, result] = await this._askInformationFromComponent(messageData);
         if (result.isStringSelectMenu()) {
@@ -504,28 +508,23 @@ export abstract class ActionExecutionContext<
     protected async _askForUserSelection(data: BaseAskSelectionData & { maxNumberOfOptions: number }): Promise<Collection<Snowflake, User>>
     protected async _askForUserSelection(data: BaseAskSelectionData): Promise<User | Collection<Snowflake, User> | null> {
         const uid = v4();
-        const messageData: BaseMessageOptions & { ephemeral: true } = {
-            embeds: [
-                { title: data.title, description: data.description, color: COLOR_INFO }
-            ],
-            components: [
-                {
-                    type: ComponentType.ActionRow,
-                    components: [
-                        {
-                            type: ComponentType.UserSelect,
-                            custom_id: `local-${uid}-select`,
-                            placeholder: data.placeholder ?? "Choisissez une option",
-                            min_values: data.minNumberOfOptions ?? 1,
-                            max_values: data.maxNumberOfOptions
-                        }
-                    ]
-                }
-            ],
-            ephemeral: true
-        };
+
+        const components: APIActionRowComponent<APIMessageActionRowComponent>[] = [
+            {
+                type: ComponentType.ActionRow,
+                components: [
+                    {
+                        type: ComponentType.UserSelect,
+                        custom_id: `local-${uid}-select`,
+                        placeholder: data.placeholder ?? "Choisissez une option",
+                        min_values: data.minNumberOfOptions ?? 1,
+                        max_values: data.maxNumberOfOptions
+                    }
+                ]
+            }
+        ];
         if (data.minNumberOfOptions === 0) {
-            messageData.components?.push({
+            components.push({
                 type: ComponentType.ActionRow,
                 components: [
                     {
@@ -537,6 +536,14 @@ export abstract class ActionExecutionContext<
                 ]
             });
         }
+
+        const messageData: BaseMessageOptions & { ephemeral: true } = {
+            embeds: [
+                { title: data.title, description: data.description, color: COLOR_INFO }
+            ],
+            components,
+            ephemeral: true
+        };
 
         const [interaction, message, result] = await this._askInformationFromComponent(messageData, { duration: 3 * MINUTE_IN_MS });
         if (result.isUserSelectMenu()) {

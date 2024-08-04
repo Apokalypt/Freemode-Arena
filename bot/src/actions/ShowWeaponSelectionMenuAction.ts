@@ -92,7 +92,7 @@ class ShowWeaponSelectionMenuActionExecutionContext<IsValidated extends true | f
             style: ButtonStyle.Success,
             custom_id: "dummy-validate-selection",
             label: "Valider la sélection",
-            disabled: !player.weapons.selectionIsUpdatable()
+            disabled: !player.weapons.selectionIsUpdatable() || player.weapons.selection.length === 0
         };
         const actionToValidate = new ValidateWeaponsSelectionAction({ });
         this._client.actions.linkComponentToAction(validationButton, actionToValidate);

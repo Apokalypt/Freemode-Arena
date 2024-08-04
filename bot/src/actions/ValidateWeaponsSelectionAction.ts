@@ -1,6 +1,14 @@
 import type { BotClient } from "@models/BotClient";
 import type { WithoutModifiers, InteractionForAction } from "@bot-types";
-import { APIButtonComponentWithCustomId, ButtonStyle, ChannelType, ComponentType, EmbedBuilder } from "discord.js";
+import path from "path";
+import {
+    APIButtonComponentWithCustomId,
+    AttachmentBuilder,
+    ButtonStyle,
+    ChannelType,
+    ComponentType,
+    EmbedBuilder
+} from "discord.js";
 import { getDiscriminatorModelForClass } from "@typegoose/typegoose";
 import { Action, ActionExecutionContext, ActionModel, InputAction, InputActionValidated } from "@models/action/Action";
 import { IntermediateModel } from "@decorators/database";
@@ -15,7 +23,7 @@ import { NotPlayerInMatchException } from "@exceptions/championship/NotPlayerInM
 import { UserNotRegisteredException } from "@exceptions/championship/UserNotRegisteredException";
 import { InvalidPlayerStateException } from "@exceptions/championship/InvalidPlayerStateException";
 import {
-    CHAMPIONSHIP_END_DATE,
+    CHAMPIONSHIP_END_DATE, EMOJI_FAQ,
     EMOJI_INFORMATION,
     EMOJI_MATCHMAKING,
     EMOJI_RIGHT_ARROW,
@@ -123,12 +131,15 @@ class ValidateWeaponsSelectionActionExecutionContext<IsValidated extends true | 
                 style: ButtonStyle.Primary,
                 label: "Voir la sélection de l'adversaire",
                 custom_id: "dummy-id-0",
+                emoji: EMOJI_MATCHMAKING
             };
             this._client.actions.linkComponentToAction(buttonToDisplaySelection, displayMatchSelectionAction);
 
+            const file = new AttachmentBuilder(path.join(__dirname, '../assets/maps', updatedMatch.map.filename));
+
             await thread.send({
                 content: `# Match prêt ${EMOJI_MATCHMAKING}\n` +
-                    `<@${updatedMatch.players[0].participantId}> & <@${updatedMatch.players[1].participantId}>` +
+                    `<@${updatedMatch.players[0].participantId}> & <@${updatedMatch.players[1].participantId}>\n` +
                     `${EMOJI_INFORMATION} *Pensez à consulter le règlement complet pour éviter de prendre des avertissements ou de voir le match se faire invalider...*\n` +
                     "\n" +
                     `## ${EMOJI_WARNING} Rappel - [clique ici pour le règlement complet](<https://discord.com/channels/547113077506834473/1180875466559737896>)\n` +
@@ -142,8 +153,9 @@ class ValidateWeaponsSelectionActionExecutionContext<IsValidated extends true | 
                 embeds: [
                     new EmbedBuilder()
                         .setTitle("Lieu du match")
-                        .setImage(updatedMatch.map.url)
+                        .setImage(`attachment://${updatedMatch.map.filename}`)
                 ],
+                files: [file],
                 components: [
                     {
                         type: ComponentType.ActionRow,
@@ -152,7 +164,8 @@ class ValidateWeaponsSelectionActionExecutionContext<IsValidated extends true | 
                                 type: ComponentType.Button,
                                 style: ButtonStyle.Link,
                                 label: "Règlement + FAQ",
-                                url: `https://discord.com/channels/${thread.guildId}/${FAQ_CHANNEL_ID}`
+                                url: `https://discord.com/channels/${thread.guildId}/${FAQ_CHANNEL_ID}`,
+                                emoji: EMOJI_FAQ
                             },
                             buttonToDisplaySelection
                         ]

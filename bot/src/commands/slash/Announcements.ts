@@ -76,25 +76,25 @@ const sc_RegisterChampionshipCommand = new SubSlashCommandOption(
                 "- Accepter que sa voix soit diffusé sur la chaîne de RedCrow (optionnel)\n" +
                 "\n" +
                 "# Comment participer ?\n" +
-                "Clique sur le bouton ci-dessous ⤵️\n" +
-                "\n" +
-                `-# ${EMOJI_INFORMATION} _Une fois inscrit, vous devrez vous rendre dans <#${CHAMPIONSHIP_CHANNEL_ID}> pour rechercher des adversaires._`,
+                "Clique sur le bouton bleu `S'inscrire` ⤵️\n",
             components: [
                 {
                     type: ComponentType.ActionRow,
                     components: [
-                        inscriptionButton,
                         {
                             type: ComponentType.Button,
                             style: ButtonStyle.Link,
                             label: "Règlement + FAQ",
                             url: `https://discord.com/channels/${channel.guildId}/${FAQ_CHANNEL_ID}`,
                             emoji: EMOJI_FAQ
-                        }
+                        },
+                        inscriptionButton
                     ]
                 }
             ]
         });
+
+        await channel.send(`-# ${EMOJI_INFORMATION} _Une fois inscrit, vous devrez vous rendre dans <#${CHAMPIONSHIP_CHANNEL_ID}> pour rechercher des adversaires._`);
 
         await interaction.editReply({ content: "The message has been sent" });
     }
@@ -152,7 +152,7 @@ const sc_MatchmakingChampionshipCommand = new SubSlashCommandOption(
                 "2. Planifiez votre match 📆 \n" +
                 `3. Validez votre enregistrement ${EMOJI_VALIDATED}` +
                 "\n" +
-                "Maintenant, n'attendez plus et lancez un match via \"Chercher un adversaire\" ⚔️",
+                `Maintenant, n'attendez plus et lancez un match via "${EMOJI_MATCHMAKING} Chercher un adversaire"`,
             components: [
                 {
                     type: ComponentType.ActionRow,

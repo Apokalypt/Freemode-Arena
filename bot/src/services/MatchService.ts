@@ -1,7 +1,9 @@
 import type { APIActionRowComponent, APIMessageActionRowComponent } from "discord-api-types/v10";
 import type { ParticipantDocument } from "@models/championship/Participant";
+import path from "path";
 import { isDocument } from "@typegoose/typegoose";
 import {
+    AttachmentBuilder,
     ButtonStyle,
     ChannelType,
     ComponentType, EmbedBuilder,
@@ -11,7 +13,7 @@ import {
 } from "discord.js";
 import {
     BASE_TOKENS_COUNT,
-    CHAMPIONSHIP_CHANNEL_ID,
+    CHAMPIONSHIP_CHANNEL_ID, EMOJI_INFORMATION,
     EMOJI_RIGHT_ARROW,
     ENABLE_ADVANCED_MAP_RANDOMIZER,
     SUPPORT_ROLE_ID
@@ -93,6 +95,8 @@ export class MatchService {
         const action = new ShowWeaponSelectionMenuAction({ });
         client.actions.linkComponentToAction(buttonToSelectWeapons, action);
 
+        const file = new AttachmentBuilder(path.join(__dirname, '../assets/maps', map.filename));
+
         const message = await thread.send({
             content: "Ce fil de discussion a été créé pour que vous puissiez organiser votre match \n" +
                 `Les organisateurs (<@&${SUPPORT_ROLE_ID}>) sont aussi présent en cas de besoin.\n` +
@@ -100,6 +104,7 @@ export class MatchService {
                 "# Joueurs\n" +
                 `- <@${ticket.participantId}> ( ${ticket.participant.levelStr} ) ${EMOJI_RIGHT_ARROW} _${this._formatAdvantage(ticket.participant, opponent)}_\n` +
                 `- <@${opponent._id}> ( ${opponent.levelStr} ) ${EMOJI_RIGHT_ARROW} _${this._formatAdvantage(opponent, ticket.participant)}_\n` +
+                `-# ${EMOJI_INFORMATION} Le niveau affiché est déterminé manuellement par le staff à partir de vos précédents matchs (toutes saisons confondues)` +
                 "\n" +
                 "# Étapes à effectuer 📝 \n" +
                 "1. Sélectionnez vos armes\n" +
@@ -112,7 +117,7 @@ export class MatchService {
                 "# Où faire le match ? 🗺️ \n" +
                 "Le match doit se faire sur la carte suivante :",
             embeds: [
-                new EmbedBuilder().setImage(map.url)
+                new EmbedBuilder().setImage(`attachment://${map.filename}`)
             ],
             components: [
                 {
@@ -123,7 +128,8 @@ export class MatchService {
             allowedMentions: {
                 roles: [],
                 users: [ticket.participantId, opponent._id]
-            }
+            },
+            files: [file]
         });
         setImmediate( () => {
             return Promise.allSettled([

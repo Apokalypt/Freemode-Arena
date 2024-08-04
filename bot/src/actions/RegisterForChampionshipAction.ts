@@ -77,7 +77,7 @@ class RegisterForChampionshipActionExecutionContext<IsValidated extends true | f
         }
 
         const displayName = await this._askForText(
-            "Profil - Freemode Arena 4",
+            "Profil - Freemode Arena 5",
             {
                 title: "Pseudo à afficher sur le classement",
                 required: true,
@@ -125,7 +125,7 @@ class RegisterForChampionshipActionExecutionContext<IsValidated extends true | f
             thread.send({
                 content: `# Bonne chance ${user}\n` +
                     "** **\n" +
-                    "<a:green_check_circle:1182354698804666378> Vous êtes maintenant inscrit à ``Freemode Arena - Saison 4``\n" +
+                    "<a:green_check_circle:1182354698804666378> Vous êtes maintenant inscrit à ``Freemode Arena - Saison 5``\n" +
                     "\n" +
                     `Ce salon vous permettra de communiquer avec les gérants du championnat ( <@&${SUPPORT_ROLE_ID}> ) dans le cas où vous auriez des questions ou des problèmes.\n` +
                     "\n" +
@@ -137,7 +137,7 @@ class RegisterForChampionshipActionExecutionContext<IsValidated extends true | f
         ]);
 
         await this._answer({
-            content: "# Vous êtes maintenant inscrit à Freemode Arena 4",
+            content: "# Vous êtes maintenant inscrit à Freemode Arena 5",
             components: [
                 new ActionRowBuilder<MessageActionRowComponentBuilder>()
                     .addComponents([

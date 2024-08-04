@@ -10,7 +10,7 @@ import { ParticipantModel } from "@models/championship/Participant";
 import { InvalidActionException } from "@exceptions/actions/InvalidActionException";
 import { UserNotRegisteredException } from "@exceptions/championship/UserNotRegisteredException";
 import { ACTION_CODES, DATABASE_MODELS } from "@enums";
-import { CHAMPIONSHIP_END_DATE, EMOJI_INFORMATION, FAQ_CHANNEL_ID } from "@constants";
+import { CHAMPIONSHIP_END_DATE, EMOJI_FAQ, EMOJI_INFORMATION, EMOJI_MATCHMAKING, FAQ_CHANNEL_ID } from "@constants";
 
 type SearchOpponentChampionshipActionProperties = WithoutModifiers<SearchOpponentChampionshipAction>;
 
@@ -76,7 +76,8 @@ class SearchOpponentChampionshipActionExecutionContext<IsValidated extends true 
                                 type: ComponentType.Button,
                                 style: ButtonStyle.Link,
                                 label: "Clique ici pour accéder au fil",
-                                url: `https://discord.com/channels/${this._source.guildId}/${match.channel.threadId}`
+                                url: `https://discord.com/channels/${this._source.guildId}/${match.channel.threadId}`,
+                                emoji: EMOJI_MATCHMAKING
                             }
                         ]
                     },
@@ -87,7 +88,8 @@ class SearchOpponentChampionshipActionExecutionContext<IsValidated extends true 
                                 type: ComponentType.Button,
                                 style: ButtonStyle.Link,
                                 label: "Règlement + FAQ",
-                                url: `https://discord.com/channels/${this._source.guildId}/${FAQ_CHANNEL_ID}`
+                                url: `https://discord.com/channels/${this._source.guildId}/${FAQ_CHANNEL_ID}`,
+                                emoji: EMOJI_FAQ
                             }
                         ]
                     }

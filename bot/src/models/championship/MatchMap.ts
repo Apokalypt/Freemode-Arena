@@ -6,14 +6,14 @@ export class MatchMap {
     public name!: string;
 
     @RequiredProp({ type: String })
-    public url!: string;
+    public filename!: string;
 
-    constructor(name: string, url: string) {
+    constructor(name: string, filename: string) {
         this.name = name;
-        this.url = url;
+        this.filename = filename;
     }
 
     static fromRawData(json: any): MatchMap {
-        return new MatchMap(json.name, json.url);
+        return new MatchMap(json.name, json.filename);
     }
 }

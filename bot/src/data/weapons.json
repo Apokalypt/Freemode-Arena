@@ -1,5 +1,6 @@
 [
     {
+        "id": 1,
         "name": "Armes de poing",
         "weapons": [
             {
@@ -17,6 +18,7 @@
         ]
     },
     {
+        "id": 2,
         "name": "Mitraillettes",
         "weapons": [
             {
@@ -30,6 +32,7 @@
         ]
     },
     {
+        "id": 3,
         "name": "Fusils d'assaut",
         "weapons": [
             {
@@ -47,6 +50,7 @@
         ]
     },
     {
+        "id": 4,
         "name": "Fusils à pompe",
         "weapons": [
             {
@@ -60,6 +64,7 @@
         ]
     },
     {
+        "id": 5,
         "name": "Fusils de précision",
         "weapons": [
             {
@@ -77,6 +82,7 @@
         ]
     },
     {
+        "id": 6,
         "name": "Armes lourde",
         "weapons": [
             {
@@ -94,6 +100,7 @@
         ]
     },
     {
+        "id": 7,
         "name": "Projectiles",
         "weapons": [
             {

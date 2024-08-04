@@ -1,10 +1,11 @@
 import { Prop, PropType } from "@typegoose/typegoose";
 import { InGameWeapon } from "@models/championship/InGameWeapon";
 import { EmbeddedModel, RequiredProp } from "@decorators/database";
+import { BASE_TOKENS_COUNT } from "@constants";
 
 @EmbeddedModel()
 export class MatchPlayerWeapons {
-    @RequiredProp({ type: Number, default: 10 })
+    @RequiredProp({ type: Number, default: BASE_TOKENS_COUNT })
     public budget!: number;
     @RequiredProp({ type: InGameWeapon, default: [] }, PropType.ARRAY)
     public selection!: InGameWeapon[];

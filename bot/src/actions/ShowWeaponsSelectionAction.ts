@@ -111,7 +111,8 @@ class ShowWeaponsSelectionActionExecutionContext<IsValidated extends true | fals
                 label: weapon.name,
                 value: index.toString(),
                 default: player.weapons.selection.find( w => w.name === weapon.name ) != null,
-                description: `${weapon.value} pts`
+                description: `${weapon.value} pts`,
+                disabled: player.weapons.budget < weapon.value
             }) )
         };
         const action = new UpdateWeaponsSelectionAction({ categoryId: this.input.categoryId });

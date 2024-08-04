@@ -9,7 +9,13 @@ import {
     InteractionButtonComponentData,
     type InteractionReplyOptions
 } from "discord.js";
-import { BASE_TOKENS_COUNT, CHAMPIONSHIP_CHANNEL_ID, EMOJI_RIGHT_ARROW, SUPPORT_ROLE_ID } from "@constants";
+import {
+    BASE_TOKENS_COUNT,
+    CHAMPIONSHIP_CHANNEL_ID,
+    EMOJI_RIGHT_ARROW,
+    ENABLE_ADVANCED_MAP_RANDOMIZER,
+    SUPPORT_ROLE_ID
+} from "@constants";
 import { BotClient } from "@models/BotClient";
 import { MatchMap } from "@models/championship/MatchMap";
 import { MatchPlayer } from "@models/championship/MatchPlayer";
@@ -144,6 +150,11 @@ export class MatchService {
     public async getRandomMap(firstPlayerId: string, secondPlayerId: string): Promise<MatchMap> {
         const maps: MapRawData[] = require('../data/maps.json');
 
+        if (!ENABLE_ADVANCED_MAP_RANDOMIZER) {
+            const random = Math.floor(Math.random() * maps.length);
+            return MatchMap.fromRawData(maps[random]);
+        }
+
         const result: AggregatedMapCount[] = await MatchModel.aggregate([
             { $match: { "players.participant": { $in: [firstPlayerId, secondPlayerId] } } },
             { $group: { _id: "$map.name", count: { $sum: 1 } } }
@@ -190,12 +201,12 @@ export class MatchService {
         for (const map of mapsWithCount) {
             sum += map.probability;
             if (random <= sum) {
-                return new MatchMap(map.name, map.url)
+                return MatchMap.fromRawData(map);
             }
         }
 
         // Should never happen
-        return new MatchMap(mapsWithCount[mapsWithCount.length - 1].name, mapsWithCount[mapsWithCount.length - 1].url);
+        return MatchMap.fromRawData(mapsWithCount[mapsWithCount.length - 1]);
     }
 
     public async findAllPlayerMatches(id: string): Promise<MatchDocument[]> {

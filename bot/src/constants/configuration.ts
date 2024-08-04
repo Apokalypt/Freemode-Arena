@@ -9,6 +9,7 @@ let XBOX_ROLE_ID: string;
 let PC_ROLE_ID: string;
 
 const BASE_TOKENS_COUNT = 10;
+const ENABLE_ADVANCED_MAP_RANDOMIZER = false; // Set to true when the season is on multiple maps
 
 if (process.env.NODE_ENV === "development") {
     SUPPORT_ROLE_ID = "935532722074570755";
@@ -75,5 +76,6 @@ export {
     XBOX_ROLE_ID,
     PC_ROLE_ID,
 
-    BASE_TOKENS_COUNT
+    BASE_TOKENS_COUNT,
+    ENABLE_ADVANCED_MAP_RANDOMIZER
 }

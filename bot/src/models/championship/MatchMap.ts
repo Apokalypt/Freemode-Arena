@@ -12,4 +12,8 @@ export class MatchMap {
         this.name = name;
         this.url = url;
     }
+
+    static fromRawData(json: any): MatchMap {
+        return new MatchMap(json.name, json.url);
+    }
 }

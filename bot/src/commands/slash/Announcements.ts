@@ -11,7 +11,7 @@ import { SubSlashCommandOption } from "@models/command/options/executable/SubSla
 import { RegisterForChampionshipAction } from "../../actions/RegisterForChampionshipAction";
 import { SearchOpponentChampionshipAction } from "../../actions/SearchOpponentChampionshipAction";
 import { InvalidActionException } from "@exceptions/actions/InvalidActionException";
-import { EMOJI_FAQ, EMOJI_MATCHMAKING, FAQ_CHANNEL_ID } from "@constants";
+import { CHAMPIONSHIP_CHANNEL_ID, EMOJI_FAQ, EMOJI_INFORMATION, EMOJI_MATCHMAKING, FAQ_CHANNEL_ID } from "@constants";
 
 /**
  * [SUB-COMMAND] - Event registering
@@ -51,25 +51,27 @@ const sc_RegisterChampionshipCommand = new SubSlashCommandOption(
         client.actions.linkComponentToAction(inscriptionButton, action);
 
         await channel.send({
-            content: "# Freemode Arena - Saison 4\n" +
+            content: "# Freemode Arena 5 🏆 \n" +
+                "La nouvelle saison de Freemode Arena arrive sur Glitch GTA France !\n" +
+                "C'est le moment de se battre et de gagner des duels. Inscris-toi et affronte d'autres participants " +
+                "pour remporter un titre, et potentiellement des récompenses <:23_Dollar:1229109417497202804> \n" +
                 "\n" +
-                "La nouvelle saison de **Freemode Arena** arrive sur **Glitch GTA France** !\n" +
-                "C'est le moment de montrer à tout le monde qui est le patron des duels Freemode, inscris-toi et affronte d'autres participants pour t'amuser et, potentiellement, gagner des cadeaux!\n" +
-                "\n" +
-                "## Les récompenses\n" +
+                "# Les récompenses 🎁 \n" +
                 "- Cartes cadeaux pour la majorité des participants\n" +
                 "- Rôle unique et obtenable qu'avec une participation dans ce tournoi\n" +
                 "- Expérience (RP) sur le serveur\n" +
                 "\n" +
-                "## Conditions d'accès\n" +
+                "# Conditions d'accès 📝 \n" +
                 "- Être sur PC, sur PS5 ou Xbox Series\n" +
-                "- Pouvoir enregistrer son gameplay (boitier d'acquisition, capture de jeu de votre console, ...)\n" +
-                "- Accepter que son gameplay soit diffusé sur la [chaîne de RedCrow](<https://www.youtube.com/c/RedCrow>)\n" +
-                "- Avoir une armurerie sur GTA Online - *Optionnel mais grandement conseillé*\n" +
-                "- Pseudonyme qui sera affiché sur les rediffusions\n" +
+                "- Devoir enregistrer son gameplay\n" +
+                "- Un pseudonyme qui sera affiché sur les rediffusions (15 caractères)\n" +
+                "- Accepter que son gameplay et son pseudo de jeu soit diffusé sur la chaîne de RedCrow\n" +
+                "- Accepter que sa voix soit diffusé sur la chaîne de RedCrow (optionnel)\n" +
                 "\n" +
-                "## Comment participer ?\n" +
-                "Clique sur le bouton ci-dessous :arrow_heading_down: ",
+                "# Comment participer ?\n" +
+                "Clique sur le bouton ci-dessous ⤵️\n" +
+                "\n" +
+                `-# ${EMOJI_INFORMATION} _Une fois inscrit, vous devrez vous rendre dans <#${CHAMPIONSHIP_CHANNEL_ID}> pour rechercher des adversaires._`,
             components: [
                 {
                     type: ComponentType.ActionRow,
@@ -131,19 +133,19 @@ const sc_MatchmakingChampionshipCommand = new SubSlashCommandOption(
         client.actions.linkComponentToAction(matchmakingButton, action);
 
         await channel.send({
-            content: "# Trouver un adversaire pour faire des points\n" +
+            content: "# LANCER UN MATCH 🏆 \n" +
+                "Faîtes un maximum de matchs contre les autres participants ! **Vous remporterez davantage de points 📈  ET de cashprize <:23_Dollar:1229109417497202804> **\n" +
                 "\n" +
-                "Vous souhaitez gagner ? Faîtes un **maximum de matchs** contre les autres participants !\n" +
+                "## Clique sur le bouton \"Je Cherche Un Adversaire\"\n" +
+                "_Le bot cherche un adversaire sur la même plateforme que toi_\n" +
+                "**Si aucun adversaire n'est trouvé, le bot te mettra dans la file d'attente ⏳**\n" +
                 "\n" +
-                "1. Clique sur le bouton \"Je Cherche Un Adversaire\"\n" +
-                "2. Le bot cherche un adversaire sur la même plateforme que toi\n" +
-                "  - *Si aucun adversaire n'est trouvé, le bot te mettra dans la file d'attente*\n" +
-                "3. Une fois qu'un adversaire est trouvé, vous êtes ajoutés dans le même fil de discussion pour :\n" +
-                "  - Sélectionnez vos armes\n" +
-                "  - Planifiez votre match\n" +
-                "  - Validez votre enregistrement\n" +
+                "## Une fois qu'un adversaire est trouvé, vous êtes ajoutés ensemble dans un fil de discussion.\n" +
+                "1. Sélectionnez vos armes 🔫 \n" +
+                "2. Planifiez votre match 📆 \n" +
+                "3. Validez votre enregistrement <:02_Accepter:1088997177935794257> \n" +
                 "\n" +
-                "<:white_right_arrow:1182354037346148482> N'attends plus et clique sur \"Chercher un adversaire\" !",
+                "Maintenant, n'attendez plus et lancez un match via \"Chercher un adversaire\" ⚔️",
             components: [
                 {
                     type: ComponentType.ActionRow,

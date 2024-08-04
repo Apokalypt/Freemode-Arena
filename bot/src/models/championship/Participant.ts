@@ -15,6 +15,16 @@ export class Participant extends TimeStamps {
 
     @RequiredProp({ type: Number, validate: (value: number) => value === 0 || value === 1 || value === 2, default: DEFAULT_USER_LEVEL })
     public level!: 0 | 1 | 2; // User estimation level
+    public get levelStr(): string {
+        switch (this.level) {
+            case 0:
+                return "DÉBUTANT 🔵";
+            case 1:
+                return "INTERMÉDIAIRE 🟡";
+            case 2:
+                return "PRO 🔴";
+        }
+    }
 
     // Required property but the information is not available when creating the document
     @Prop({ type: DiscordChannel })

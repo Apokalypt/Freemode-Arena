@@ -9,7 +9,7 @@ import {
     InteractionButtonComponentData,
     type InteractionReplyOptions
 } from "discord.js";
-import { CHAMPIONSHIP_CHANNEL_ID, SUPPORT_ROLE_ID } from "@constants";
+import { CHAMPIONSHIP_CHANNEL_ID, EMOJI_RIGHT_ARROW, SUPPORT_ROLE_ID } from "@constants";
 import { BotClient } from "@models/BotClient";
 import { MatchMap } from "@models/championship/MatchMap";
 import { MatchPlayer } from "@models/championship/MatchPlayer";
@@ -88,21 +88,23 @@ export class MatchService {
         client.actions.linkComponentToAction(buttonToSelectWeapons, action);
 
         const message = await thread.send({
-            content: `# <@${ticket.participant._id}> VS <@${opponent._id}>\n` +
-                "** **" +
-                "Ce fil de discussion a été créé pour que vous puissiez organiser votre match et discuter avec les " +
-                `organisateurs (<@&SUPPORT_ROLE_ID>) en cas de besoin.\n` +
+            content: "Ce fil de discussion a été créé pour que vous puissiez organiser votre match \n" +
+                `Les organisateurs (<@&${SUPPORT_ROLE_ID}>) sont aussi présent en cas de besoin.\n` +
                 "\n" +
-                "## Étapes\n" +
-                "1. Chaque joueur sélectionne ses armes\n" +
-                "2. Une fois ceci fait, le bot envoie un message avec les armes des deux joueurs\n" +
-                "3. Les joueurs doivent se mettre d'accord sur une date\n" +
-                "4. Les joueurs font leur match en enregistrant leur gameplay\n" +
-                "5. Les joueurs envoient leur gameplay dans ce fil de discussion ou en privé à l'un des organisateurs\n" +
+                "# Joueurs\n" +
+                `- <@${ticket.participantId}> ( ${ticket.participant.levelStr} ) ${EMOJI_RIGHT_ARROW} _+2 jetons pour ton choix d'arme_\n` +
+                `- <@${opponent._id}> ( ${opponent.levelStr} ) ${EMOJI_RIGHT_ARROW} _-2 jetons pour ton choix d'arme_\n` +
+                "\n" +
+                "# Étapes à effectuer 📝 \n" +
+                "1. Sélectionnez vos armes\n" +
+                "2. Le bot enverra un message avec les armes des deux joueurs\n" +
+                "3. Mettez vous d'accord sur une date de match\n" +
+                "4. Faites votre match en enregistrez le gameplay\n" +
+                "5. Envoyez le gameplay dans ce fil de discussion ou en privé à l'un des organisateurs\n" +
                 "6. Les organisateurs vérifient le match et saisissent le score des joueurs\n" +
                 "\n" +
-                "## Où faire le match ?\n" +
-                `Le match doit se faire sur la carte suivante:`,
+                "# Où faire le match ? 🗺️ \n" +
+                "Le match doit se faire sur la carte suivante :",
             embeds: [
                 new EmbedBuilder().setImage(map.url)
             ],
@@ -114,7 +116,7 @@ export class MatchService {
             ],
             allowedMentions: {
                 roles: [],
-                users: [ticket.participant._id, opponent._id]
+                users: [ticket.participantId, opponent._id]
             }
         });
         setImmediate( () => {

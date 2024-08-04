@@ -127,18 +127,18 @@ class ValidateWeaponsSelectionActionExecutionContext<IsValidated extends true | 
             this._client.actions.linkComponentToAction(buttonToDisplaySelection, displayMatchSelectionAction);
 
             await thread.send({
-                content: `# À vos armes <@${updatedMatch.players[0].participantId}> & <@${updatedMatch.players[1].participantId}> !\n` +
+                content: `# Match prêt ${EMOJI_MATCHMAKING}\n` +
+                    `<@${updatedMatch.players[0].participantId}> & <@${updatedMatch.players[1].participantId}>` +
                     `${EMOJI_INFORMATION} *Pensez à consulter le règlement complet pour éviter de prendre des avertissements ou de voir le match se faire invalider...*\n` +
                     "\n" +
                     `## ${EMOJI_WARNING} Rappel - [clique ici pour le règlement complet](<https://discord.com/channels/547113077506834473/1180875466559737896>)\n` +
-                    "- __Enregistrez__ votre gameplay\n" +
-                    "- Le match doit durer __15 minutes__\n" +
-                    "- Avant de commencer le match, vous devez __sauter d'un hélicoptère__\n" +
-                    "- Mode de visée __libre__ obligatoire\n" +
-                    "- S’équiper d’une __tenue d’extermination__ ou de __plongée sans casque__\n" +
-                    `- Consulter la [FAQ](<https://discord.com/channels/${updatedMatch.channel.guildId}/${FAQ_CHANNEL_ID}>) (99% des questions y sont répondues)\n` +
+                    "- Enregistrez votre gameplay\n" +
+                    "- Le match doit durer 16 minutes\n" +
+                    "- Avant de commencer le match, vous devez sauter d'un hélicoptère\n" +
+                    "- Mode de visée libre obligatoire\n" +
+                    `- Lisez la [FAQ](<https://discord.com/channels/${updatedMatch.channel.guildId}/${FAQ_CHANNEL_ID}>) (99% des questions y sont répondues)\n` +
                     "\n" +
-                    `## ${EMOJI_RIGHT_ARROW} Dorénavant, convenez d'une date pour effectuer votre match ${EMOJI_MATCHMAKING}`,
+                    `## ${EMOJI_RIGHT_ARROW} Dorénavant, convenez d'une date pour effectuer votre match :date:`,
                 embeds: [
                     new EmbedBuilder()
                         .setTitle("Lieu du match")

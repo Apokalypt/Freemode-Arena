@@ -1,6 +1,5 @@
 [
     {
-        "id": 1,
         "name": "Armes de poing",
         "weapons": [
             {
@@ -18,66 +17,58 @@
         ]
     },
     {
-        "id": 2,
         "name": "Mitraillettes",
         "weapons": [
             {
-                "name": "Pistolet mitrailleur",
-                "value": 2
-            },
-            {
                 "name": "Mitraillette",
-                "value": 2
+                "value": 3
             },
             {
                 "name": "Mitrailleuse de combat",
+                "value": 6
+            }
+        ]
+    },
+    {
+        "name": "Fusils d'assaut",
+        "weapons": [
+            {
+                "name": "Fusil d'assaut AK",
+                "value": 4
+            },
+            {
+                "name": "Fusil Bullpup",
+                "value": 4
+            },
+            {
+                "name": "Carabine spéciale",
                 "value": 5
             }
         ]
     },
     {
-        "id": 3,
-        "name": "Fusils d'assaut",
-        "weapons": [
-            {
-                "name": "Fusil d'assaut",
-                "value": 3
-            },
-            {
-                "name": "Fusil Bullpup",
-                "value": 3
-            },
-            {
-                "name": "Carabine spéciale",
-                "value": 4
-            }
-        ]
-    },
-    {
-        "id": 4,
         "name": "Fusils à pompe",
         "weapons": [
             {
                 "name": "Fusil à pompe",
-                "value": 1
+                "value": 2
             },
             {
                 "name": "Fusil à pompe d'assaut",
-                "value": 4
+                "value": 6
             }
         ]
     },
     {
-        "id": 5,
         "name": "Fusils de précision",
         "weapons": [
             {
-                "name": "Sniper",
-                "value": 2
+                "name": "Sniper standard",
+                "value": 1
             },
             {
                 "name": "Sniper lourd",
-                "value": 10
+                "value": 5
             },
             {
                 "name": "Fusil à lunette",
@@ -86,38 +77,32 @@
         ]
     },
     {
-        "id": 6,
         "name": "Armes lourde",
         "weapons": [
             {
-                "name": "Lance-grenades",
+                "name": "Lance-grenades compact",
                 "value": 6
             },
             {
-                "name": "Minigun",
-                "value": 9
+                "name": "Lance-grenades",
+                "value": 8
             },
             {
                 "name": "Lance-roquettes",
-                "value": 8
+                "value": 13
             }
         ]
     },
     {
-        "id": 7,
         "name": "Projectiles",
         "weapons": [
             {
-                "name": "Grenades",
-                "value": 1
-            },
-            {
                 "name": "Mines de proximité",
-                "value": 1
+                "value": 3
             },
             {
                 "name": "Bombes collantes",
-                "value": 2
+                "value": 4
             }
         ]
     }

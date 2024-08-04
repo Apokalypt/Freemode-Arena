@@ -8,6 +8,8 @@ let PLAYSTATION_ROLE_ID: string;
 let XBOX_ROLE_ID: string;
 let PC_ROLE_ID: string;
 
+const BASE_TOKENS_COUNT = 10;
+
 if (process.env.NODE_ENV === "development") {
     SUPPORT_ROLE_ID = "935532722074570755";
     SUPPORT_CHANNEL_ID = "1180815808268615751";
@@ -71,5 +73,7 @@ export {
 
     PLAYSTATION_ROLE_ID,
     XBOX_ROLE_ID,
-    PC_ROLE_ID
+    PC_ROLE_ID,
+
+    BASE_TOKENS_COUNT
 }

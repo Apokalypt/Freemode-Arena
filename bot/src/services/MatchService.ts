@@ -9,7 +9,7 @@ import {
     InteractionButtonComponentData,
     type InteractionReplyOptions
 } from "discord.js";
-import { CHAMPIONSHIP_CHANNEL_ID, EMOJI_RIGHT_ARROW, SUPPORT_ROLE_ID } from "@constants";
+import { BASE_TOKENS_COUNT, CHAMPIONSHIP_CHANNEL_ID, EMOJI_RIGHT_ARROW, SUPPORT_ROLE_ID } from "@constants";
 import { BotClient } from "@models/BotClient";
 import { MatchMap } from "@models/championship/MatchMap";
 import { MatchPlayer } from "@models/championship/MatchPlayer";
@@ -92,8 +92,8 @@ export class MatchService {
                 `Les organisateurs (<@&${SUPPORT_ROLE_ID}>) sont aussi présent en cas de besoin.\n` +
                 "\n" +
                 "# Joueurs\n" +
-                `- <@${ticket.participantId}> ( ${ticket.participant.levelStr} ) ${EMOJI_RIGHT_ARROW} _+2 jetons pour ton choix d'arme_\n` +
-                `- <@${opponent._id}> ( ${opponent.levelStr} ) ${EMOJI_RIGHT_ARROW} _-2 jetons pour ton choix d'arme_\n` +
+                `- <@${ticket.participantId}> ( ${ticket.participant.levelStr} ) ${EMOJI_RIGHT_ARROW} _${this._formatAdvantage(ticket.participant, opponent)}_\n` +
+                `- <@${opponent._id}> ( ${opponent.levelStr} ) ${EMOJI_RIGHT_ARROW} _${this._formatAdvantage(opponent, ticket.participant)}_\n` +
                 "\n" +
                 "# Étapes à effectuer 📝 \n" +
                 "1. Sélectionnez vos armes\n" +
@@ -256,8 +256,21 @@ export class MatchService {
 
     private _getBudget(participant: ParticipantDocument, opponent: ParticipantDocument): number {
         const levelDifference = opponent.level - participant.level;
+        const multiplier = Math.abs(levelDifference) === 2 ? 3 : 2;
 
-        return 10 + (levelDifference * 2);
+        return BASE_TOKENS_COUNT + (levelDifference * multiplier);
+    }
+
+    private _formatAdvantage(player: ParticipantDocument, opponent: ParticipantDocument): string {
+        const budget = this._getBudget(player, opponent);
+
+        if (budget === BASE_TOKENS_COUNT) {
+            return "Aucun avantage";
+        } else if (budget > BASE_TOKENS_COUNT) {
+            return `+${budget - BASE_TOKENS_COUNT} jetons pour ton choix d'arme`;
+        } else {
+            return `-${BASE_TOKENS_COUNT - budget} jetons pour ton choix d'arme`;
+        }
     }
 }
 

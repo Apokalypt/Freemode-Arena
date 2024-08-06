@@ -1,0 +1,116 @@
+[
+    {
+        "id": 1,
+        "name": "Armes de poing",
+        "weapons": [
+            {
+                "name": "Pistolet de détresse",
+                "value": 1
+            },
+            {
+                "name": "Revolver lourd",
+                "value": 1
+            },
+            {
+                "name": "Pistolet perforant",
+                "value": 2
+            }
+        ]
+    },
+    {
+        "id": 2,
+        "name": "Mitraillettes",
+        "weapons": [
+            {
+                "name": "Mitraillette",
+                "value": 3
+            },
+            {
+                "name": "Mitrailleuse de combat",
+                "value": 6
+            }
+        ]
+    },
+    {
+        "id": 3,
+        "name": "Fusils d'assaut",
+        "weapons": [
+            {
+                "name": "Fusil d'assaut AK",
+                "value": 4
+            },
+            {
+                "name": "Fusil Bullpup",
+                "value": 4
+            },
+            {
+                "name": "Carabine spéciale",
+                "value": 5
+            }
+        ]
+    },
+    {
+        "id": 4,
+        "name": "Fusils à pompe",
+        "weapons": [
+            {
+                "name": "Fusil à pompe",
+                "value": 2
+            },
+            {
+                "name": "Fusil à pompe d'assaut",
+                "value": 6
+            }
+        ]
+    },
+    {
+        "id": 5,
+        "name": "Fusils de précision",
+        "weapons": [
+            {
+                "name": "Sniper standard",
+                "value": 1
+            },
+            {
+                "name": "Sniper lourd",
+                "value": 5
+            },
+            {
+                "name": "Fusil à lunette",
+                "value": 7
+            }
+        ]
+    },
+    {
+        "id": 6,
+        "name": "Armes lourde",
+        "weapons": [
+            {
+                "name": "Lance-grenades compact",
+                "value": 6
+            },
+            {
+                "name": "Lance-grenades",
+                "value": 8
+            },
+            {
+                "name": "Lance-roquettes",
+                "value": 13
+            }
+        ]
+    },
+    {
+        "id": 7,
+        "name": "Projectiles",
+        "weapons": [
+            {
+                "name": "Mines de proximité",
+                "value": 3
+            },
+            {
+                "name": "Bombes collantes",
+                "value": 4
+            }
+        ]
+    }
+]

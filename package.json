@@ -1,0 +1,49 @@
+{
+  "name": "freemode-arena-bot",
+  "version": "2.2.0",
+  "description": "The official bot for the championship named Freemode Arena",
+  "main": "src/index.ts",
+  "scripts": {
+    "transpile": "tsc",
+    "build": "npm install --include=dev && npm run transpile && npm install --omit=dev && cp .env.vault dist && cp -r ./src/assets ./dist/src/assets && cp -r ./src/data ./dist/src/data && cp package.json dist && sed 's+src/index.ts+src/index.js+g' package.json > dist/package.json",
+    "start": "npm install --include=dev && npm run transpile && node dist/src/index.js",
+    "dev": "npm install --include=dev && nodemon --config nodemon.json src/index.ts --trace-warnings",
+    "dev:debug": "npm install --include=dev && nodemon --config nodemon.json --inspect-brk src/index.ts --trace-warnings"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Apokalypt/Whiteout-Survival-Bot.git"
+  },
+  "author": "Apokalypt",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Apokalypt/Whiteout-Survival-Bot/issues"
+  },
+  "homepage": "https://github.com/Apokalypt/Whiteout-Survival-Bot#readme",
+  "dependencies": {
+    "@typegoose/typegoose": "^12.6.0",
+    "discord.js": "^14.15.3",
+    "dotenv": "^16.4.5",
+    "module-alias": "^2.2.3",
+    "uuid": "^10.0.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^18.18.8",
+    "@types/uuid": "^10.0.0",
+    "discord-api-types": "^0.37.93",
+    "nodemon": "^3.1.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
+  },
+  "_moduleAliases": {
+    "@bot-types": "./src/types",
+    "@models": "./src/models",
+    "@managers": "./src/managers",
+    "@exceptions": "./src/exceptions",
+    "@constants": "./src/constants",
+    "@enums": "./src/enums",
+    "@decorators": "./src/decorators",
+    "@services": "./src/services"
+  }
+}

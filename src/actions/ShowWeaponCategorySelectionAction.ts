@@ -102,7 +102,8 @@ class ShowWeaponCategorySelectionActionExecutionContext<IsValidated extends true
             type: ComponentType.Button,
             style: ButtonStyle.Primary,
             custom_id: "dummy-back-to-categories",
-            label: "Retour au menu principal"
+            label: "Retour au menu principal",
+            emoji: { name: "🔙" }
         };
         const actionToBackToHomeMenu = new ShowWeaponSelectionMenuAction({ });
         this._client.actions.linkComponentToAction(backToHomeMenuButton, actionToBackToHomeMenu);

@@ -164,7 +164,8 @@ class UpdateWeaponsSelectionActionExecutionContext<IsValidated extends true | fa
             type: ComponentType.Button,
             style: ButtonStyle.Primary,
             custom_id: "dummy-back-to-categories",
-            label: "Retour aux catégories"
+            label: "Retour aux catégories",
+            emoji: { name: "🔙" }
         };
         const actionToBackToCategories = new ShowWeaponCategorySelectionAction({ });
         this._client.actions.linkComponentToAction(backToCategoriesButton, actionToBackToCategories);

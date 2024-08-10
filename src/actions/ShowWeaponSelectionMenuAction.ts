@@ -82,7 +82,8 @@ class ShowWeaponSelectionMenuActionExecutionContext<IsValidated extends true | f
             style: ButtonStyle.Primary,
             label: "Modifier la sélection",
             custom_id: "dummy-id-0",
-            disabled: !player.weapons.selectionIsUpdatable()
+            disabled: !player.weapons.selectionIsUpdatable(),
+            emoji: { name: "✏️" }
         };
         const action = new ShowWeaponCategorySelectionAction({ });
         this._client.actions.linkComponentToAction(buttonToSelectWeapons, action);

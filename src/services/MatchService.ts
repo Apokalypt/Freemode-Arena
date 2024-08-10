@@ -99,7 +99,7 @@ export class MatchService {
 
         const message = await thread.send({
             content: "Ce fil de discussion a été créé pour que vous puissiez organiser votre match \n" +
-                `Les organisateurs (<@&${SUPPORT_ROLE_ID}>) sont aussi présent en cas de besoin.\n` +
+                `Les organisateurs () sont aussi présent en cas de besoin.\n` +
                 "\n" +
                 "# Joueurs\n" +
                 `- <@${ticket.participantId}> ( ${ticket.participant.levelStr} ) ${EMOJI_RIGHT_ARROW} _${this._formatAdvantage(ticket.participant, opponent)}_\n` +
@@ -134,7 +134,7 @@ export class MatchService {
         setImmediate( () => {
             return Promise.allSettled([
                 message.pin(),
-                message.edit({ content: message.content.replace("SUPPORT_ROLE_ID", SUPPORT_ROLE_ID) })
+                message.edit({ content: message.content.replace("()", `(<@&${SUPPORT_ROLE_ID}>)`) })
             ])
         });
 

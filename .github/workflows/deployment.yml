@@ -120,7 +120,7 @@ jobs:
         run: rsync -avz -e "ssh -A -p ${{ secrets.SSH_PORT }}" ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/${{ secrets.BOT_DIR_NAME }}/
 
       - name: 'Install dependencies'
-        run: ssh -A -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'cd /home/${{ secrets.SSH_USER }}/${{ secrets.BOT_DIR_NAME }}/ && npm install 2>&1 ./npm-install.log'
+        run: ssh -A -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'cd /home/${{ secrets.SSH_USER }}/${{ secrets.BOT_DIR_NAME }}/ && npm install > npm-install.log 2>&1'
 
       - name: 'Restart bot'
-        run: ssh -A -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'pm2 restart ${{ secrets.BOT_PM2_NAME }} 2>&1 ./pm2-restart.log'
+        run: ssh -A -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'pm2 restart ${{ secrets.BOT_PM2_NAME }} > pm2-restart.log 2>&1'

@@ -90,7 +90,8 @@ export class MatchService {
             type: ComponentType.Button,
             style: ButtonStyle.Primary,
             label: "Sélectionner mes armes",
-            customId: "dummy-id-0"
+            customId: "dummy-id-0",
+            emoji: { name: "🔫" }
         };
         const action = new ShowWeaponSelectionMenuAction({ });
         client.actions.linkComponentToAction(buttonToSelectWeapons, action);

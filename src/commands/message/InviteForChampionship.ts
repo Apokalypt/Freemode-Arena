@@ -2,7 +2,7 @@ import { ButtonComponentData, ButtonStyle, ComponentType, PermissionFlagsBits } 
 import { MessageContextMenuCommand } from "@models/command/MessageContextMenuCommand";
 import { RegisterForChampionshipAction } from "../../actions/RegisterForChampionshipAction";
 import { UnknownGuildException } from "@exceptions/guild/UnknownGuildException";
-import { CHAMPIONSHIP_END_DATE, FAQ_CHANNEL_ID } from "@constants";
+import { CHAMPIONSHIP_END_DATE, EMOJI_FAQ, FAQ_CHANNEL_ID } from "@constants";
 import { InvalidActionException } from "@exceptions/actions/InvalidActionException";
 
 const commandName = "Invite for FA" as const;
@@ -33,7 +33,8 @@ export = new MessageContextMenuCommand(
             customId: "dummy",
             type: ComponentType.Button,
             style: ButtonStyle.Primary,
-            label: "Je m'inscris !"
+            label: "Je m'inscris !",
+            emoji: { name: "🏆"}
         };
         client.actions.linkComponentToAction(registerButton, new RegisterForChampionshipAction({ }));
 
@@ -41,7 +42,8 @@ export = new MessageContextMenuCommand(
             type: ComponentType.Button,
             style: ButtonStyle.Link,
             label: "FAQ",
-            url: `https://discord.com/channels/${interaction.guildId}/${FAQ_CHANNEL_ID}`
+            url: `https://discord.com/channels/${interaction.guildId}/${FAQ_CHANNEL_ID}`,
+            emoji: EMOJI_FAQ
         };
 
         await interaction.targetMessage.reply({

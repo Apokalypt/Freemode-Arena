@@ -57,7 +57,7 @@ const KNOWN_USERS_LEVEL: Record<string, number> = {
 };
 const DEFAULT_USER_LEVEL = 0;
 
-const CHAMPIONSHIP_END_DATE = new Date("2024-08-23T21:30:00.000Z"); // 23 August 2024 at 21:30 UTC (23:30 CEST)
+const CHAMPIONSHIP_END_DATE = new Date("2024-08-24T21:30:00.000Z"); // 24 August 2024 at 21:30 UTC (23:30 CEST)
 
 export {
     SUPPORT_ROLE_ID,

@@ -13,17 +13,19 @@ import { getDiscriminatorModelForClass } from "@typegoose/typegoose";
 import { Action, ActionExecutionContext, ActionModel, InputAction, InputActionValidated } from "@models/action/Action";
 import { IntermediateModel } from "@decorators/database";
 import { DisplayMatchSelectionAction } from "./DisplayMatchSelectionAction";
-import { ShowWeaponCategorySelectionAction } from "./ShowWeaponCategorySelectionAction";
 import { ACTION_CODES, DATABASE_MODELS } from "@enums";
 import { ParticipantModel } from "@models/championship/Participant";
 import { MatchService } from "@services/MatchService";
+import { NotSupportedException } from "@exceptions/NotSupportedException";
 import { UnknownMatchException } from "@exceptions/championship/UnknownMatchException";
 import { InvalidActionException } from "@exceptions/actions/InvalidActionException";
 import { NotPlayerInMatchException } from "@exceptions/championship/NotPlayerInMatchException";
 import { UserNotRegisteredException } from "@exceptions/championship/UserNotRegisteredException";
 import { InvalidPlayerStateException } from "@exceptions/championship/InvalidPlayerStateException";
 import {
-    CHAMPIONSHIP_END_DATE, EMOJI_FAQ,
+    CHAMPIONSHIP_END_DATE,
+    EMOJI_FAQ,
+    EMOJI_GREEN_CHECK,
     EMOJI_INFORMATION,
     EMOJI_MATCHMAKING,
     EMOJI_RIGHT_ARROW,
@@ -69,6 +71,10 @@ class ValidateWeaponsSelectionActionExecutionContext<IsValidated extends true | 
     }
 
     protected async _execute(this:ValidateWeaponsSelectionActionExecutionContext<true>): Promise<void> {
+        if (this._source.isChatInputCommand()) {
+            throw new NotSupportedException();
+        }
+
         if (this._source.message.flags.has("Ephemeral")) {
             // We are navigating through the menu, we don't want to send new messages each time but just update the
             // previous one to offer a better user experience.
@@ -138,16 +144,19 @@ class ValidateWeaponsSelectionActionExecutionContext<IsValidated extends true | 
             const file = new AttachmentBuilder(path.join(__dirname, '../assets/maps', updatedMatch.map.filename));
 
             await thread.send({
-                content: `# Match prêt ${EMOJI_MATCHMAKING}\n` +
-                    `<@${updatedMatch.players[0].participantId}> & <@${updatedMatch.players[1].participantId}>\n` +
-                    `${EMOJI_INFORMATION} *Pensez à consulter le règlement complet pour éviter de prendre des avertissements ou de voir le match se faire invalider...*\n` +
+                content: `# Match prêt ${EMOJI_GREEN_CHECK}\n` +
+                    `${EMOJI_INFORMATION} Pensez à consulter le règlement complet pour éviter de prendre des avertissements ou de voir le match se faire invalider...\n` +
+                    "\n" +
+                    `## Joueurs ${EMOJI_MATCHMAKING} \n` +
+                    `- <@${updatedMatch.players[0].participantId}>\n` +
+                    `- <@${updatedMatch.players[1].participantId}>\n` +
                     "\n" +
                     `## ${EMOJI_WARNING} Rappel - [clique ici pour le règlement complet](<https://discord.com/channels/547113077506834473/1180875466559737896>)\n` +
-                    "- Enregistrez votre gameplay\n" +
-                    "- Le match doit durer 16 minutes\n" +
-                    "- Avant de commencer le match, vous devez sauter d'un hélicoptère\n" +
-                    "- Mode de visée libre obligatoire\n" +
-                    `- Lisez la [FAQ](<https://discord.com/channels/${updatedMatch.channel.guildId}/${FAQ_CHANNEL_ID}>) (99% des questions y sont répondues)\n` +
+                    "- Rejoignez-vous dans l'activité à deux :round_pushpin:\n" +
+                    "- Commencez à enregistrer votre gameplay avant de lancer l'activité :movie_camera:\n" +
+                    "- Le match doit durer 15 minutes :hourglass_flowing_sand:\n" +
+                    "- Mode de visée libre obligatoire :dart:\n" +
+                    `- Lisez la [FAQ](<https://discord.com/channels/${updatedMatch.channel.guildId}/${FAQ_CHANNEL_ID}>) (99% des questions y sont répondues) ${EMOJI_GREEN_CHECK}\n` +
                     "\n" +
                     `## ${EMOJI_RIGHT_ARROW} Dorénavant, convenez d'une date pour effectuer votre match :date:`,
                 embeds: [
@@ -176,39 +185,9 @@ class ValidateWeaponsSelectionActionExecutionContext<IsValidated extends true | 
                 .catch( _ => null );
         });
 
-        const buttonToSelectWeapons: APIButtonComponentWithCustomId = {
-            type: ComponentType.Button,
-            style: ButtonStyle.Primary,
-            label: "Modifier la sélection",
-            custom_id: "dummy-id-0",
-            disabled: !player.weapons.selectionIsUpdatable(),
-            emoji: { name: "✏️" }
-        };
-        const action = new ShowWeaponCategorySelectionAction({ });
-        this._client.actions.linkComponentToAction(buttonToSelectWeapons, action);
-
-        const validationButton: APIButtonComponentWithCustomId = {
-            type: ComponentType.Button,
-            style: ButtonStyle.Success,
-            custom_id: "dummy-validate-selection",
-            label: "Valider la sélection",
-            disabled: !player.weapons.selectionIsUpdatable()
-        };
-        const actionToValidate = new ValidateWeaponsSelectionAction({ });
-        this._client.actions.linkComponentToAction(validationButton, actionToValidate);
-
-        const data = MatchService.instance.buildPlayerMenu(
-            player,
-            "Tableau de bord",
-            "Clique ci-dessous pour modifier ta sélection ou la valider",
-            [
-                {
-                    type: ComponentType.ActionRow,
-                    components: [buttonToSelectWeapons, validationButton]
-                }
-            ]
-        );
-        await this._source.editReply(data)
+        await this._source.editReply(
+            MatchService.instance.buildDashboardPlayerMenu(this._client, player)
+        )
     }
 }
 

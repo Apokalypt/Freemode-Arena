@@ -64,7 +64,7 @@ class SearchOpponentChampionshipActionExecutionContext<IsValidated extends true 
             await this._answer({
                 content: "## Adversaire trouvé!\n" +
                     "** **\n" +
-                    `- Plateforme: **${participant.platform}**\n` +
+                    `- Plateforme: **${ticket.platform}**\n` +
                     `- Adversaire: <@${ticket.participantId}>\n` +
                     "\n" +
                     `${EMOJI_INFORMATION} Rendez-vous dans votre fil de discussion ( <#${match.channel.threadId}> ) pour sélectionner vos armes et pour convenir d'une date avec votre adversaire.`,
@@ -106,10 +106,11 @@ class SearchOpponentChampionshipActionExecutionContext<IsValidated extends true 
                     throw error;
                 });
 
+            // FIXME -> multiple platforms per user not supported here
             await this._answer({
                 content: "## Matchmaking en cours\n" +
                     "** **\n" +
-                    `- Plateforme: **${participant.platform}**\n` +
+                    `- Plateforme: **${participant.platforms[0]}**\n` +
                     `- Temps d'attente: *inconnu*\n` +
                     "\n" +
                     `${EMOJI_INFORMATION} Dès lors qu'un joueur cherchera un adversaire sur la même plateforme que vous, nous créerons un fil de discussion :thumbsup:`,

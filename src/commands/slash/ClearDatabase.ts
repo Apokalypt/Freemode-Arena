@@ -41,7 +41,7 @@ export = new SlashCommand(
                     ephemeral: true
                 });
             })
-            .catch((err) => {
+            .catch(() => {
                 interaction.reply({
                     embeds: [
                         new EmbedBuilder()

@@ -8,11 +8,15 @@ import { EXCEPTION_CODES } from "@enums";
  */
 export class InvalidPlayerStateException extends Exception {
     /* ======================= Constructor ======================= */
-    constructor(reason: string) {
+    constructor(reason: string, userId?: string) {
+        let messageSuffix = "Vous ne pouvez pas effectuer cette action car vous êtes dans un état invalide.";
+        if (userId) {
+            messageSuffix = `<@${userId}> est dans un état invalide pour effectuer cette action.`;
+        }
+
         super(
             EXCEPTION_CODES.CHAMPIONSHIP_INVALID_PLAYER_STATE,
-            "Vous ne pouvez pas effectuer cette action car vous êtes dans un état invalide.\n\n" +
-                `**Raison**: ${reason}`,
+            `${messageSuffix}\n\n**Raison**: ${reason}`,
             COLOR_ERROR
         );
     }

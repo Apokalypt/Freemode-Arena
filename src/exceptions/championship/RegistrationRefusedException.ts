@@ -7,10 +7,15 @@ import { EXCEPTION_CODES } from "@enums";
  */
 export class RegistrationRefusedException extends Exception {
     /* ======================= Constructor ======================= */
-    constructor(reason: string) {
+    constructor(reason: string, userId?: string) {
+        let messageSuffix = "Vous n'êtes pas autorisé à vous inscrire au championnat.";
+        if (userId) {
+            messageSuffix = `<@${userId}> n'est pas autorisé à s'inscrire au championnat.`;
+        }
+
         super(
             EXCEPTION_CODES.CHAMPIONSHIP_REGISTRATION_REFUSED,
-            `Vous n'êtes pas autorisé à vous inscrire au championnat.\n\n**Raison :** ${reason}`,
+            `${messageSuffix}\n\n**Raison :** ${reason}`,
             COLOR_ERROR
         );
     }

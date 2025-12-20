@@ -117,7 +117,7 @@ class ShowWeaponsSelectionActionExecutionContext<IsValidated extends true | fals
 
         let data: InteractionReplyOptions;
         if (categorySelected) {
-            data = MatchService.instance.buildPlayerWeaponSelectionMenu(this._client, player, categorySelected)
+            data = MatchService.instance.buildPlayerWeaponSelectionMenu(this._client, player, categorySelected);
         } else {
             data = MatchService.instance.buildPlayerCategorySelectionMenu(this._client, player);
         }

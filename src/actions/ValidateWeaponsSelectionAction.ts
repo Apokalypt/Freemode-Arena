@@ -187,7 +187,7 @@ class ValidateWeaponsSelectionActionExecutionContext<IsValidated extends true | 
 
         await this._source.editReply(
             MatchService.instance.buildDashboardPlayerMenu(this._client, player)
-        )
+        );
     }
 }
 

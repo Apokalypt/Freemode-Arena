@@ -45,7 +45,7 @@ export class MatchPlayerWeapons {
             const categories = MatchService.instance.getWeaponsCategories();
             const shouldShowTokens = categories.some(category => {
                 return category.weapons.some( weapon => weapon.value !== 1 );
-            })
+            });
 
             if (TOKENS_GROUP_METHOD === "global") {
                 return this.selection.map( weapon => `${INDENT} • ${weapon.toString(true, shouldShowTokens)}` )

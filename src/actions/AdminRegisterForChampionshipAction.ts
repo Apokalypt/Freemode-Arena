@@ -24,12 +24,12 @@ import {
 type AdminRegisterForChampionshipActionProperties = WithoutModifiers<AdminRegisterForChampionshipAction>;
 
 @IntermediateModel(DATABASE_MODELS.ACTION_ADMIN_REGISTER_CHAMPIONSHIP, { allowMixed: true })
-export class AdminRegisterForChampionshipAction extends Action<"ACTION_REGISTER_CHAMPIONSHIP"> {
+export class AdminRegisterForChampionshipAction extends Action<"ACTION_ADMIN_REGISTER_CHAMPIONSHIP"> {
     @RequiredProp({ type: String })
     userId!: string;
 
     constructor(data: Partial<AdminRegisterForChampionshipActionProperties>) {
-        super({ ...data, __type: "ACTION_REGISTER_CHAMPIONSHIP" });
+        super({ ...data, __type: "ACTION_ADMIN_REGISTER_CHAMPIONSHIP" });
 
         this.userId = data.userId!;
     }
@@ -47,11 +47,11 @@ export class AdminRegisterForChampionshipAction extends Action<"ACTION_REGISTER_
     }
 }
 
-type InputRegisterForChampionshipAction = InputAction<"ACTION_REGISTER_CHAMPIONSHIP"> & { userId?: string };
-type InputRegisterForChampionshipActionValidated = InputActionValidated<"ACTION_REGISTER_CHAMPIONSHIP"> & { userId: string };
+type InputRegisterForChampionshipAction = InputAction<"ACTION_ADMIN_REGISTER_CHAMPIONSHIP"> & { userId?: string };
+type InputRegisterForChampionshipActionValidated = InputActionValidated<"ACTION_ADMIN_REGISTER_CHAMPIONSHIP"> & { userId: string };
 
 class AdminRegisterForChampionshipActionExecutionContext<IsValidated extends true | false = false>
-    extends ActionExecutionContext<IsValidated, InputRegisterForChampionshipAction, InputRegisterForChampionshipActionValidated, "ACTION_REGISTER_CHAMPIONSHIP"> {
+    extends ActionExecutionContext<IsValidated, InputRegisterForChampionshipAction, InputRegisterForChampionshipActionValidated, "ACTION_ADMIN_REGISTER_CHAMPIONSHIP"> {
 
     protected override async _checkActionValidity(): Promise<InputRegisterForChampionshipActionValidated> {
         const inputValidated = await super._checkActionValidity();
@@ -135,11 +135,11 @@ class AdminRegisterForChampionshipActionExecutionContext<IsValidated extends tru
                     `${EMOJI_INFORMATION} Ce fil de discussion vous permet de discuter **en privé** avec les organisateurs du tournoi.\n` +
                     `Le canal <#${SUPPORT_CHANNEL_ID}> permet de consulter toutes les annonces liés à l'avancement **du tournoi et des matchs**.\n` +
                     "\n" +
-                    `Pour rappel, les règles du tournoi sont **explicités** dans <#${FAQ_CHANNEL_ID}>\n` +
+                    `Pour rappel, les règles du tournoi sont **explicitées** dans <#${FAQ_CHANNEL_ID}>\n` +
                     "\n" +
                     `Vous trouverez dans <#${CHAMPIONSHIP_CHANNEL_ID}> les fils de discussions qui concernent **vos matchs à vous** (pour choisir vos armes et connaitre vos adversaires)\n` +
                     "\n" +
-                    `Et enfin, <#${DISCUSSION_CHANNEL_ID}> vous permet de discuter entre les différents jours inscrits ainsi qu'avec le staff.\n` +
+                    `Et enfin, <#${DISCUSSION_CHANNEL_ID}> vous permet de discuter avec les autres joueurs inscrits ainsi qu'avec le staff.\n` +
                     "\n" +
                     `### ⚠️  _Si vous avez la moindre question, adressez-vous aux <@&${SUPPORT_ROLE_ID}>._`
             }),
@@ -163,4 +163,4 @@ class AdminRegisterForChampionshipActionExecutionContext<IsValidated extends tru
     }
 }
 
-getDiscriminatorModelForClass(ActionModel, AdminRegisterForChampionshipActionExecutionContext, ACTION_CODES.ACTION_REGISTER_CHAMPIONSHIP);
+getDiscriminatorModelForClass(ActionModel, AdminRegisterForChampionshipAction, ACTION_CODES.ACTION_REGISTER_CHAMPIONSHIP);

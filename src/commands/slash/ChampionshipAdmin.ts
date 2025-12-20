@@ -227,7 +227,7 @@ const matchAddSubCommand = new SubSlashCommandOption(
             firstParticipant,
             secondParticipant,
             phase
-        )
+        );
 
         await interaction.editReply({
             content: "# Nouveau match enregistré\n" +
@@ -503,7 +503,7 @@ const playerRegisterSubCommand = new SubSlashCommandOption(
 
         const user = interaction.options.getUser(playerRegisterOptionUser.name, true);
 
-        await new AdminRegisterForChampionshipAction({userId: user.id}).startFromObject(client, interaction)
+        await new AdminRegisterForChampionshipAction({userId: user.id}).startFromObject(client, interaction);
     }
 );
 

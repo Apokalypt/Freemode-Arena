@@ -55,7 +55,7 @@ export class MatchService {
             firstParticipant,
             secondParticipant,
             phase
-        )
+        );
     }
 
     public async createMatchFromTicket(client: BotClient, guild: Guild, ticket: MatchmakingTicketDocument, opponent: ParticipantDocument) {
@@ -182,7 +182,7 @@ export class MatchService {
 
         player.weapons.selection = selection;
         if (TOKENS_GROUP_METHOD === "global") {
-            const selectionCost = player.weapons.globalSelectionCost()
+            const selectionCost = player.weapons.globalSelectionCost();
             if (selectionCost > player.weapons.budget) {
                 throw new InvalidUserSelectionException(
                     `La somme de vos armes sélectionnées dépasse votre budget (${selectionCost} / ${player.weapons.budget}).`
@@ -390,7 +390,7 @@ export class MatchService {
             throw new UnknownException();
         }
 
-        let nameThread = `${firstParticipant.displayName} vs ${secondParticipant.displayName} - ${String(count).padStart(4,'0')}`
+        let nameThread = `${firstParticipant.displayName} vs ${secondParticipant.displayName} - ${String(count).padStart(4,'0')}`;
         if (phase) {
             nameThread = `${phase} - ${nameThread}`;
         }

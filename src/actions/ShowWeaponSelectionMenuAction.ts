@@ -80,7 +80,7 @@ class ShowWeaponSelectionMenuActionExecutionContext<IsValidated extends true | f
 
         await this._source.editReply(
             MatchService.instance.buildDashboardPlayerMenu(this._client, player)
-        )
+        );
     }
 }
 

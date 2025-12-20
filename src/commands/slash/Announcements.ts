@@ -75,7 +75,7 @@ const sc_HomeChampionshipMessageCommand = new SubSlashCommandOption(
 
         await channel.send({
             content: "# Freemode Arena 6 🏆 \n" +
-                "La nouvelle saison de Freemode Arena est maintenant lancé sur Glitch GTA France !\n" +
+                "La nouvelle saison de Freemode Arena est maintenant lancée sur Glitch GTA France !\n" +
                 "\n" +
                 `### ${EMOJI_INFORMATION} Vous retrouverez, dans ce canal, les annonces suivantes :\n` +
                 "- les avancements du tournoi 📈 \n" +

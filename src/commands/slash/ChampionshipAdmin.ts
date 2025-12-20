@@ -200,11 +200,11 @@ const matchAddSubCommand = new SubSlashCommandOption(
                 secondParticipant.platforms.includes(platform)
             );
             if (platformIntersection.length === 0) {
-                throw new InvalidPlayerStateException(`<@${firstParticipant.id}> n'a pas de plateforme en commun avec <@${secondParticipant.id}>`, firstParticipant._id);
+                throw new InvalidPlayerStateException(`<@${firstParticipant._id}> n'a pas de plateforme en commun avec <@${secondParticipant._id}>`, firstParticipant._id);
             }
             if (platformIntersection.length > 1) {
                 throw new InvalidPlayerStateException(
-                    `<@${firstParticipant.id}> a plusieurs plateformes en commun avec <@${secondParticipant.id}>, veuillez renseigner la plateforme dans la commande.`,
+                    `<@${firstParticipant._id}> a plusieurs plateformes en commun avec <@${secondParticipant._id}>, veuillez renseigner la plateforme dans la commande.`,
                     firstParticipant._id
                 );
             }
@@ -213,10 +213,10 @@ const matchAddSubCommand = new SubSlashCommandOption(
             // Check that both players are registered on the given platform
 
             if (!firstParticipant.platforms.includes(platform)) {
-                throw new InvalidPlayerStateException(`Le joueur <@${firstParticipant._id}> ne joue pas sur la plateforme ${platform} indiquée.`, firstParticipant._id);
+                throw new InvalidPlayerStateException(`Le joueur <@${firstParticipant._id}> n'est pas inscrit sur la plateforme ${platform} indiquée.`, firstParticipant._id);
             }
             if (!secondParticipant.platforms.includes(platform)) {
-                throw new InvalidPlayerStateException(`Le joueur <@${secondParticipant._id}> ne joue pas sur la plateforme ${platform} indiquée.`, secondParticipant._id);
+                throw new InvalidPlayerStateException(`Le joueur <@${secondParticipant._id}> n'est pas inscrit sur la plateforme ${platform} indiquée.`, secondParticipant._id);
             }
         }
 

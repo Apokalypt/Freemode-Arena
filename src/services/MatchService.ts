@@ -306,7 +306,7 @@ export class MatchService {
             style: ButtonStyle.Success,
             custom_id: "dummy-validate-selection",
             label: "Valider la sélection",
-            disabled: !player.weapons.selectionIsUpdatable()
+            disabled: !player.weapons.selectionIsUpdatable() || !player.weapons.hasReachedBudgetSelection()
         };
         const actionToValidate = new ValidateWeaponsSelectionAction({ });
         client.actions.linkComponentToAction(validationButton, actionToValidate);

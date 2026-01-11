@@ -28,6 +28,17 @@ export class MatchPlayerWeapons {
         return this.validatedAt == null;
     }
 
+    public hasReachedBudgetSelection(): boolean {
+        if (TOKENS_GROUP_METHOD === "global") {
+            return this.globalSelectionCost() === this.budget;
+        } else {
+            const categories = MatchService.instance.getWeaponsCategories();
+            return categories.every( category => {
+                return this.categorySelectionCost(category.name) === this.budget;
+            });
+        }
+    }
+
     public stringifyStatus() {
         if (this.validatedAt == null) {
             return ":hourglass: - Non Validée";

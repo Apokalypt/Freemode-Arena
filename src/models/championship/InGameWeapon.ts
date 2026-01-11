@@ -1,9 +1,10 @@
 import { EmbeddedModel, RequiredProp } from "@decorators/database";
+import {Prop} from "@typegoose/typegoose";
 
 @EmbeddedModel()
 export class InGameWeapon {
-    @RequiredProp({ type: String })
-    public category!: string;
+    @Prop({ type: String })
+    public category?: string;
     @RequiredProp({ type: String })
     public name!: string;
     @RequiredProp({ type: Number })
@@ -16,7 +17,15 @@ export class InGameWeapon {
     }
 
 
-    toString(): string {
-        return `[**${this.cost} jeton(s)**] ${this.category} - ${this.name}`;
+    toString(showCategory = true, showTokens = true): string {
+        let result = "";
+        if (showTokens) {
+            result += `[**${this.cost} jeton(s)**] `;
+        }
+        if (showCategory && this.category) {
+            result += `${this.category} - `;
+        }
+        result += this.name;
+        return result;
     }
 }

@@ -9,24 +9,32 @@ import {
     Guild,
     InteractionButtonComponentData,
     type InteractionReplyOptions,
-    type APIActionRowComponent, type APIMessageActionRowComponent
+    type APIActionRowComponent, type APIMessageActionRowComponent, type APIButtonComponentWithCustomId,
+    type APIStringSelectComponent
 } from "discord.js";
-import {
-    BASE_TOKENS_COUNT,
-    CHAMPIONSHIP_CHANNEL_ID, EMOJI_INFORMATION,
-    EMOJI_RIGHT_ARROW,
-    ENABLE_ADVANCED_MAP_RANDOMIZER,
-    SUPPORT_ROLE_ID
-} from "@constants";
 import { BotClient } from "@models/BotClient";
 import { MatchMap } from "@models/championship/MatchMap";
 import { MatchPlayer } from "@models/championship/MatchPlayer";
 import { InGameWeapon } from "@models/championship/InGameWeapon";
 import { MatchDocument, MatchModel } from "@models/championship/Match";
-import { ShowWeaponSelectionMenuAction } from "../actions/ShowWeaponSelectionMenuAction";
 import { MatchmakingTicketDocument } from "@models/championship/MatchmakingTicket";
+import { ShowWeaponsSelectionAction } from "../actions/ShowWeaponsSelectionAction";
+import { UpdateWeaponsSelectionAction } from "../actions/UpdateWeaponsSelectionAction";
+import { ShowWeaponSelectionMenuAction } from "../actions/ShowWeaponSelectionMenuAction";
+import { ValidateWeaponsSelectionAction } from "../actions/ValidateWeaponsSelectionAction";
 import { UnknownException } from "@exceptions/UnknownException";
 import { InvalidUserSelectionException } from "@exceptions/championship/InvalidUserSelectionException";
+import { Platforms } from "@enums";
+import {
+    TOKENS_GROUP_METHOD,
+    BASE_TOKENS_COUNT,
+    CHAMPIONSHIP_CHANNEL_ID,
+    SUPPORT_ROLE_ID,
+    EMOJI_INFORMATION,
+    EMOJI_RIGHT_ARROW,
+    ENABLE_ADVANCED_MAP_RANDOMIZER,
+    ENABLE_LEVEL_BASED_ADVANTAGE
+} from "@constants";
 
 export class MatchService {
     private static _instance: MatchService;
@@ -39,6 +47,17 @@ export class MatchService {
     }
 
 
+    public async createMatchManually(client: BotClient, guild: Guild, platform: Platforms, firstParticipant: ParticipantDocument, secondParticipant: ParticipantDocument, phase: string) {
+        return this._createMatch(
+            client,
+            guild,
+            platform,
+            firstParticipant,
+            secondParticipant,
+            phase
+        );
+    }
+
     public async createMatchFromTicket(client: BotClient, guild: Guild, ticket: MatchmakingTicketDocument, opponent: ParticipantDocument) {
         if (!ticket.populated("participant")) {
             await ticket.populate("participant");
@@ -48,98 +67,15 @@ export class MatchService {
             throw new UnknownException();
         }
 
-        const count = await MatchModel.countDocuments();
-
-        const channel = await guild.channels.fetch(CHAMPIONSHIP_CHANNEL_ID);
-        if (!channel || channel.type !== ChannelType.GuildText) {
-            throw new UnknownException();
-        }
-
-        const thread = await channel.threads.create({
-            type: ChannelType.PrivateThread,
-            invitable: false,
-            name: `${ticket.participant.displayName} vs ${opponent.displayName} - ${String(count).padStart(4,'0')}`
-        });
-
-        const map = await this.getRandomMap(ticket.participant._id, opponent._id);
-
-        const match = await MatchModel.create({
-            channel: {
-                guildId: guild.id,
-                channelId: channel.id,
-                threadId: thread.id
-            },
-            platform: ticket.platform,
-            players: [
-                {
-                    participant: ticket.participant._id,
-                    weapons: { budget: this._getBudget(ticket.participant, opponent) }
-                },
-                {
-                    participant: opponent._id,
-                    weapons: { budget: this._getBudget(opponent, ticket.participant) }
-                }
-            ],
-            map
-        });
-
-        ticket.match = match._id;
-        await ticket.save();
-
-        const buttonToSelectWeapons: InteractionButtonComponentData = {
-            type: ComponentType.Button,
-            style: ButtonStyle.Primary,
-            label: "Sélectionner mes armes",
-            customId: "dummy-id-0",
-            emoji: { name: "🔫" }
-        };
-        const action = new ShowWeaponSelectionMenuAction({ });
-        client.actions.linkComponentToAction(buttonToSelectWeapons, action);
-
-        const file = new AttachmentBuilder(path.join(__dirname, '../assets/maps', map.filename));
-
-        const message = await thread.send({
-            content: "Ce fil de discussion a été créé pour que vous puissiez organiser votre match \n" +
-                `Les organisateurs () sont aussi présent en cas de besoin.\n` +
-                "\n" +
-                "# Joueurs\n" +
-                `- <@${ticket.participantId}> ( ${ticket.participant.levelStr} ) ${EMOJI_RIGHT_ARROW} _${this._formatAdvantage(ticket.participant, opponent)}_\n` +
-                `- <@${opponent._id}> ( ${opponent.levelStr} ) ${EMOJI_RIGHT_ARROW} _${this._formatAdvantage(opponent, ticket.participant)}_\n` +
-                `-# ${EMOJI_INFORMATION} Le niveau affiché est déterminé manuellement par le staff à partir de vos précédents matchs (toutes saisons confondues)` +
-                "\n" +
-                "# Étapes à effectuer 📝 \n" +
-                "1. Sélectionnez vos armes\n" +
-                "2. Le bot enverra un message avec les armes des deux joueurs\n" +
-                "3. Mettez vous d'accord sur une date de match\n" +
-                "4. Faites votre match en enregistrez le gameplay\n" +
-                "5. Envoyez le gameplay dans ce fil de discussion ou en privé à l'un des organisateurs\n" +
-                "6. Les organisateurs vérifient le match et saisissent le score des joueurs\n" +
-                "\n" +
-                "# Où faire le match ? 🗺️ \n" +
-                "Le match doit se faire sur la carte suivante :",
-            embeds: [
-                new EmbedBuilder().setImage(`attachment://${map.filename}`)
-            ],
-            components: [
-                {
-                    type: ComponentType.ActionRow,
-                    components: [buttonToSelectWeapons]
-                }
-            ],
-            allowedMentions: {
-                roles: [],
-                users: [ticket.participantId, opponent._id]
-            },
-            files: [file]
-        });
-        setImmediate( () => {
-            return Promise.allSettled([
-                message.pin(),
-                message.edit({ content: message.content.replace("()", `(<@&${SUPPORT_ROLE_ID}>)`) })
-            ])
-        });
-
-        return match;
+        return this._createMatch(
+            client,
+            guild,
+            ticket.platform,
+            ticket.participant,
+            opponent,
+            undefined,
+            ticket
+        )
     }
 
     public async getMatchFromId(id: string): Promise<MatchDocument | null> {
@@ -233,12 +169,8 @@ export class MatchService {
     }
 
     public updatePlayerSelectionOnCategory(categoryId: string, weaponIds: string[], player: MatchPlayer) {
+        const category = this.getWeaponsCategoryFromId(categoryId);
         let selection = player.weapons.selection;
-
-        const category = this.getWeaponsCategories().find( c => c.id.toString() === categoryId );
-        if (!category) {
-            throw new UnknownException();
-        }
 
         // Remove all weapons selected by the player from the category
         selection = selection.filter( w => !category.weapons.find( weapon => weapon.name == w.name ) );
@@ -249,23 +181,170 @@ export class MatchService {
         );
 
         player.weapons.selection = selection;
-        if (player.weapons.selectionCost > player.weapons.budget) {
-            throw new InvalidUserSelectionException(
-                `La somme de vos armes sélectionnées dépasse votre budget (${player.weapons.selectionCost} / ${player.weapons.budget}).`
-            );
+        if (TOKENS_GROUP_METHOD === "global") {
+            const selectionCost = player.weapons.globalSelectionCost();
+            if (selectionCost > player.weapons.budget) {
+                throw new InvalidUserSelectionException(
+                    `La somme de vos armes sélectionnées dépasse votre budget (${selectionCost} / ${player.weapons.budget}).`
+                );
+            }
+        } else {
+            const categoryName = category.name;
+            const categorySelectionCost = player.weapons.categorySelectionCost(categoryName);
+            if (categorySelectionCost > player.weapons.budget) {
+                throw new InvalidUserSelectionException(
+                    `Le nombre d'armes sélectionnées dans la catégorie "${categoryName}" dépasse votre budget (${categorySelectionCost} / ${player.weapons.budget}).`
+                );
+            }
         }
 
         return category;
     }
 
-    public buildPlayerMenu(player: MatchPlayer, title: string, footer: string, components: APIActionRowComponent<APIMessageActionRowComponent>[]): InteractionReplyOptions {
+    public buildPlayerWeaponSelectionMenu(client: BotClient, player: MatchPlayer, category: CategoryRawData) {
+        const hasOnlyOneCategory = this.getWeaponsCategories().length === 1;
+
+        const actionButton: APIStringSelectComponent = {
+            type: ComponentType.StringSelect,
+            custom_id: "dummy-weapons-selection",
+            placeholder: "Clique ici pour sélectionner une arme",
+            min_values: 0,
+            max_values: category.weapons.length,
+            options: category.weapons.map( (weapon, index) => ({
+                label: weapon.name,
+                value: index.toString(),
+                default: player.weapons.selection.find( w => w.name === weapon.name ) != null,
+                description: `${weapon.value} pts`
+            }) )
+        };
+        const action = new UpdateWeaponsSelectionAction({ categoryId: category.id.toString() });
+        client.actions.linkComponentToAction(actionButton, action, "weaponIds");
+
+        const backButton: APIButtonComponentWithCustomId = {
+            type: ComponentType.Button,
+            style: ButtonStyle.Primary,
+            custom_id: "dummy-back",
+            label: hasOnlyOneCategory ? "Retour au menu principal" : "Retour aux catégories",
+            emoji: { name: "🔙" }
+        };
+        const actionToBackToCategories = hasOnlyOneCategory ? new ShowWeaponSelectionMenuAction({ })
+            : new ShowWeaponsSelectionAction({ });
+        client.actions.linkComponentToAction(backButton, actionToBackToCategories);
+
+        let title = "Menu - Sélection d'armes";
+        if (category.name) {
+            title += ` "${category.name}"`;
+        }
+        const footer = "Clique ci-dessous pour sélectionner les armes à ajouter/retirer";
+
+        return this._buildPlayerMenu(
+            player,
+            title,
+            footer,
+            [
+                { type: ComponentType.ActionRow, components: [actionButton] },
+                { type: ComponentType.ActionRow, components: [backButton] }
+            ]
+        );
+    }
+
+    public buildPlayerCategorySelectionMenu(client: BotClient, player: MatchPlayer) {
+        const categories = this.getWeaponsCategories();
+
+        const actionButton: APIStringSelectComponent = {
+            type: ComponentType.StringSelect,
+            custom_id: "dummy",
+            placeholder: "Clique ici pour sélectionner une catégorie d'arme",
+            min_values: 1,
+            max_values: 1,
+            options: categories.map( category => ({
+                label: category.name,
+                value: category.id.toString(),
+            }) )
+        };
+        const action = new ShowWeaponsSelectionAction({ });
+        client.actions.linkComponentToAction(actionButton, action, "categoryId");
+
+        const backButton: APIButtonComponentWithCustomId = {
+            type: ComponentType.Button,
+            style: ButtonStyle.Primary,
+            custom_id: "dummy-back-to-categories",
+            label: "Retour au menu principal",
+            emoji: { name: "🔙" }
+        };
+        const actionToBackToHomeMenu = new ShowWeaponSelectionMenuAction({ });
+        client.actions.linkComponentToAction(backButton, actionToBackToHomeMenu);
+
+        return this._buildPlayerMenu(
+            player,
+            "Menu - Catégories d'armes",
+            "Clique ci-dessous pour sélectionner la catégorie de l'arme à ajouter/retirer",
+            [
+                { type: ComponentType.ActionRow, components: [actionButton] },
+                { type: ComponentType.ActionRow, components: [backButton] }
+            ]
+        );
+    }
+
+    public buildDashboardPlayerMenu(client: BotClient, player: MatchPlayer) {
+        const categories = this.getWeaponsCategories();
+        const categoryId: string | undefined = categories.length === 1 ? categories[0].id.toString() : undefined;
+
+        const buttonToSelectWeapons: APIButtonComponentWithCustomId = {
+            type: ComponentType.Button,
+            style: ButtonStyle.Primary,
+            label: "Modifier la sélection",
+            custom_id: "dummy-id-0",
+            disabled: !player.weapons.selectionIsUpdatable(),
+            emoji: { name: "✏️" }
+        };
+        const action = new ShowWeaponsSelectionAction({ categoryId });
+        client.actions.linkComponentToAction(buttonToSelectWeapons, action);
+
+        const validationButton: APIButtonComponentWithCustomId = {
+            type: ComponentType.Button,
+            style: ButtonStyle.Success,
+            custom_id: "dummy-validate-selection",
+            label: "Valider la sélection",
+            disabled: !player.weapons.selectionIsUpdatable() || !player.weapons.hasReachedBudgetSelection()
+        };
+        const actionToValidate = new ValidateWeaponsSelectionAction({ });
+        client.actions.linkComponentToAction(validationButton, actionToValidate);
+
+        return this._buildPlayerMenu(
+            player,
+            "Tableau de bord",
+            "Clique ci-dessous pour modifier ta sélection ou la valider",
+            [
+                {
+                    type: ComponentType.ActionRow,
+                    components: [buttonToSelectWeapons, validationButton]
+                }
+            ]
+        );
+    }
+
+    private _buildPlayerMenu(player: MatchPlayer, title: string, footer: string, components: APIActionRowComponent<APIMessageActionRowComponent>[]): InteractionReplyOptions {
+        let selectionSection = "## Sélection";
+        if (TOKENS_GROUP_METHOD === "global") {
+            const categories = this.getWeaponsCategories();
+            const atLeastWeaponCostMore = categories.some(category => {
+                return category.weapons.some( weapon => weapon.value !== 1 );
+            })
+
+            if (atLeastWeaponCostMore) {
+                selectionSection += ` - ${player.weapons.globalSelectionCost()} / ${player.weapons.budget} jetons`;
+            } else {
+                selectionSection += ` - ${player.weapons.selection.length} / ${player.weapons.budget} armes`;
+            }
+        }
+        selectionSection += `\n${player.weapons.stringifySelection()}`;
 
         let content = `# ${title}\n` +
             "\n" +
             "## Status\n" +
             `${player.weapons.stringifyStatus()}\n` +
-            `## Sélection - ${player.weapons.selectionCost} / ${player.weapons.budget} jetons\n` +
-            `${player.weapons.stringifySelection()}\n` +
+            `${selectionSection}\n` +
             "\n" +
             `### ${footer} :arrow_heading_down:`;
 
@@ -273,10 +352,22 @@ export class MatchService {
     }
 
     private _getBudget(participant: ParticipantDocument, opponent: ParticipantDocument): number {
+        if (!ENABLE_LEVEL_BASED_ADVANTAGE) {
+            return BASE_TOKENS_COUNT;
+        }
+
         const levelDifference = opponent.level - participant.level;
         const multiplier = Math.abs(levelDifference) === 2 ? 3 : 2;
 
         return BASE_TOKENS_COUNT + (levelDifference * multiplier);
+    }
+
+    private _formatMatchPlayerMention(participant: ParticipantDocument, opponent: ParticipantDocument): string {
+        if (!ENABLE_LEVEL_BASED_ADVANTAGE) {
+            return `<@${participant._id}>`;
+        }
+
+        return `<@${participant._id}> ( ${participant.levelStr} ) ${EMOJI_RIGHT_ARROW} _${this._formatAdvantage(participant, opponent)}_`
     }
 
     private _formatAdvantage(player: ParticipantDocument, opponent: ParticipantDocument): string {
@@ -289,6 +380,113 @@ export class MatchService {
         } else {
             return `-${BASE_TOKENS_COUNT - budget} jetons pour ton choix d'arme`;
         }
+    }
+
+    private async _createMatch(client: BotClient, guild: Guild, platform: Platforms, firstParticipant: ParticipantDocument, secondParticipant: ParticipantDocument, phase?: string, matchmakingTicket?: MatchmakingTicketDocument) {
+        const count = await MatchModel.countDocuments();
+
+        const channel = await guild.channels.fetch(CHAMPIONSHIP_CHANNEL_ID);
+        if (!channel || channel.type !== ChannelType.GuildText) {
+            throw new UnknownException();
+        }
+
+        let nameThread = `${firstParticipant.displayName} vs ${secondParticipant.displayName} - ${String(count).padStart(4,'0')}`;
+        if (phase) {
+            nameThread = `${phase} - ${nameThread}`;
+        }
+
+        const thread = await channel.threads.create({
+            type: ChannelType.PrivateThread,
+            invitable: false,
+            name: nameThread
+        });
+
+        const map = await this.getRandomMap(firstParticipant._id, secondParticipant._id);
+
+        const match = await MatchModel.create({
+            channel: {
+                guildId: guild.id,
+                channelId: channel.id,
+                threadId: thread.id
+            },
+            platform,
+            players: [
+                {
+                    participant: firstParticipant._id,
+                    weapons: { budget: this._getBudget(firstParticipant, secondParticipant) }
+                },
+                {
+                    participant: secondParticipant._id,
+                    weapons: { budget: this._getBudget(secondParticipant, firstParticipant) }
+                }
+            ],
+            map
+        });
+
+        if (matchmakingTicket) {
+            // Link the created match to the matchmaking ticket
+            matchmakingTicket.match = match._id;
+            await matchmakingTicket.save();
+        }
+
+        const buttonToSelectWeapons: InteractionButtonComponentData = {
+            type: ComponentType.Button,
+            style: ButtonStyle.Primary,
+            label: "Sélectionner mes armes",
+            customId: "dummy-id-0",
+            emoji: { name: "🔫" }
+        };
+        const action = new ShowWeaponSelectionMenuAction({ });
+        client.actions.linkComponentToAction(buttonToSelectWeapons, action);
+
+        const file = new AttachmentBuilder(path.join(__dirname, '../assets/maps', map.filename));
+
+        let titleMatch = `# Nouveau Match - ${platform} 🏆 `;
+        if (phase) {
+            titleMatch = `# ${phase} - ${platform} 🏆 `;
+        }
+
+        const message = await thread.send({
+            content: `${titleMatch}\n` +
+                `${EMOJI_INFORMATION} Ce fil de discussion a été créé pour que vous puissiez organiser votre match. Les organisateurs () sont aussi présents en cas de besoin.\n` +
+                "\n" +
+                "## Joueurs ⚔️ \n" +
+                `- ${this._formatMatchPlayerMention(firstParticipant, secondParticipant)}\n` +
+                `- ${this._formatMatchPlayerMention(secondParticipant, firstParticipant)}\n` +
+                "\n" +
+                "## Étapes à effectuer 📝 \n" +
+                "1. Sélectionnez vos trois armes 🔫 \n" +
+                "2. Quand les deux joueurs auront sélectionné leurs armes, le bot enverra un message avec les armes des deux joueurs 🧾 \n" +
+                "3. Mettez vous d'accord sur une date de match 📅 \n" +
+                "4. Faites votre match en enregistrant le gameplay 🎥 \n" +
+                "5. Envoyez le gameplay dans ce fil de discussion 📬 \n" +
+                "6. Les organisateurs vérifient le match et saisissent le score des joueurs 📊 \n" +
+                "\n" +
+                "## Où faire le match ? 🗺️ \n" +
+                `Le match doit se faire sur l'activité suivante : <${map.activity}>`,
+            embeds: [
+                new EmbedBuilder().setImage(`attachment://${map.filename}`)
+            ],
+            components: [
+                {
+                    type: ComponentType.ActionRow,
+                    components: [buttonToSelectWeapons]
+                }
+            ],
+            allowedMentions: {
+                roles: [],
+                users: [firstParticipant._id, secondParticipant._id]
+            },
+            files: [file]
+        });
+        setImmediate( () => {
+            return Promise.allSettled([
+                message.pin(),
+                message.edit({ content: message.content.replace("()", `(<@&${SUPPORT_ROLE_ID}>)`) })
+            ])
+        });
+
+        return match;
     }
 }
 

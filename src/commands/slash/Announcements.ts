@@ -1,8 +1,8 @@
 import path from "path";
 import {
+    APIMessageActionRowComponent,
     ButtonStyle,
     ComponentType,
-    InteractionButtonComponentData,
     LocalizationMap,
     PermissionFlagsBits
 } from "discord.js";
@@ -12,29 +12,32 @@ import { RegisterForChampionshipAction } from "../../actions/RegisterForChampion
 import { SearchOpponentChampionshipAction } from "../../actions/SearchOpponentChampionshipAction";
 import { InvalidActionException } from "@exceptions/actions/InvalidActionException";
 import {
-    CHAMPIONSHIP_CHANNEL_ID,
-    EMOJI_DOLLAR,
+    DISABLE_MATCHMAKING,
+    DISABLE_NEW_REGISTRATION,
     EMOJI_FAQ,
+    EMOJI_VALIDATED,
     EMOJI_INFORMATION,
-    EMOJI_MATCHMAKING, EMOJI_VALIDATED,
-    FAQ_CHANNEL_ID
+    EMOJI_MATCHMAKING,
+    FAQ_CHANNEL_ID,
+    SUPPORT_CHANNEL_ID,
+    CHAMPIONSHIP_CHANNEL_ID
 } from "@constants";
 
 /**
- * [SUB-COMMAND] - Event registering
+ * [SUB-COMMAND] - Event home message
  */
-const sc_RegisterChampionship = "register" as const;
-const sc_RegisterChampionshipLocalized: LocalizationMap = {
-    fr: "inscription"
+const sc_HomeChampionshipMessage = "home" as const;
+const sc_HomeChampionshipMessageLocalized: LocalizationMap = {
+    fr: "accueil"
 };
-const sc_RegisterChampionshipDescription = "Send the registration message for the championship";
-const sc_RegisterChampionshipDescriptionLocalized: LocalizationMap = {
-    fr: "Envoie le message d'inscription pour le championnat"
+const sc_HomeChampionshipMessageDescription = "Send the home message for the championship";
+const sc_HomeChampionshipMessageDescriptionLocalized: LocalizationMap = {
+    fr: "Envoie le message d'accueil pour le championnat"
 };
 
-const sc_RegisterChampionshipCommand = new SubSlashCommandOption(
-    sc_RegisterChampionship, sc_RegisterChampionshipLocalized,
-    sc_RegisterChampionshipDescription, sc_RegisterChampionshipDescriptionLocalized,
+const sc_HomeChampionshipMessageCommand = new SubSlashCommandOption(
+    sc_HomeChampionshipMessage, sc_HomeChampionshipMessageLocalized,
+    sc_HomeChampionshipMessageDescription, sc_HomeChampionshipMessageDescriptionLocalized,
     { },
     async function (client, interaction) {
         if (!interaction.inCachedGuild()) {
@@ -48,53 +51,47 @@ const sc_RegisterChampionshipCommand = new SubSlashCommandOption(
             throw new InvalidActionException("La commande doit être exécutée dans un salon textuel");
         }
 
-        const inscriptionButton: InteractionButtonComponentData = {
-            type: ComponentType.Button,
-            style: ButtonStyle.Primary,
-            label: "S'inscrire",
-            customId: "dummy-1"
-        };
-        const action = new RegisterForChampionshipAction({ });
-        client.actions.linkComponentToAction(inscriptionButton, action);
+        const components: APIMessageActionRowComponent[] = [
+            {
+                type: ComponentType.Button,
+                style: ButtonStyle.Link,
+                label: "Règlement + FAQ",
+                url: `https://discord.com/channels/${channel.guildId}/${FAQ_CHANNEL_ID}`,
+                emoji: EMOJI_FAQ
+            }
+        ];
+        if (!DISABLE_NEW_REGISTRATION) {
+            const inscriptionButton: APIMessageActionRowComponent = {
+                type: ComponentType.Button,
+                style: ButtonStyle.Primary,
+                label: "S'inscrire",
+                custom_id: "dummy-1"
+            };
+            const action = new RegisterForChampionshipAction({ });
+            client.actions.linkComponentToAction(inscriptionButton, action);
+
+            components.push(inscriptionButton);
+        }
 
         await channel.send({
-            content: "# Freemode Arena 5 🏆 \n" +
-                "La nouvelle saison de Freemode Arena arrive sur Glitch GTA France !\n" +
-                "C'est le moment de se battre et de gagner des duels. Inscris-toi et affronte d'autres participants " +
-                `pour remporter un titre, et potentiellement des récompenses ${EMOJI_DOLLAR} !\n` +
+            content: "# Freemode Arena 6 🏆 \n" +
+                "La nouvelle saison de Freemode Arena est maintenant lancée sur Glitch GTA France !\n" +
                 "\n" +
-                "# Les récompenses 🎁 \n" +
-                "- Cartes cadeaux pour la majorité des participants\n" +
-                "- Rôle unique et obtenable qu'avec une participation dans ce tournoi\n" +
-                "- Expérience (RP) sur le serveur\n" +
-                "\n" +
-                "# Conditions d'accès 📝 \n" +
-                "- Être sur PC, sur PS5 ou Xbox Series\n" +
-                "- Devoir enregistrer son gameplay\n" +
-                "- Un pseudonyme qui sera affiché sur les rediffusions (15 caractères)\n" +
-                "- Accepter que son gameplay et son pseudo de jeu soit diffusé sur la chaîne de RedCrow\n" +
-                "- Accepter que sa voix soit diffusé sur la chaîne de RedCrow (optionnel)\n" +
-                "\n" +
-                "# Comment participer ?\n" +
-                "Clique sur le bouton bleu `S'inscrire` ⤵️\n",
-            components: [
-                {
-                    type: ComponentType.ActionRow,
-                    components: [
-                        {
-                            type: ComponentType.Button,
-                            style: ButtonStyle.Link,
-                            label: "Règlement + FAQ",
-                            url: `https://discord.com/channels/${channel.guildId}/${FAQ_CHANNEL_ID}`,
-                            emoji: EMOJI_FAQ
-                        },
-                        inscriptionButton
-                    ]
-                }
+                `### ${EMOJI_INFORMATION} Vous retrouverez, dans ce canal, les annonces suivantes :\n` +
+                "- les avancements du tournoi 📈 \n" +
+                "- les résultats de chaque matchs 📊 \n" +
+                "- des \"stats of the day\" en fonction de la pertinence 📍 \n" +
+                "- des clips issus des matchs 📸 \n" +
+                "- et bien plus !",
+            components: [{ type: ComponentType.ActionRow, components }],
+            files: [
+                path.join(__dirname, "..", "..", "assets", "freemode_arena_home.png")
             ]
         });
 
-        await channel.send(`-# ${EMOJI_INFORMATION} _Une fois inscrit, vous devrez vous rendre dans <#${CHAMPIONSHIP_CHANNEL_ID}> pour rechercher des adversaires._`);
+        if (!DISABLE_MATCHMAKING) {
+            await channel.send(`-# ${EMOJI_INFORMATION} _Une fois inscrit, vous devrez vous rendre dans <#${CHAMPIONSHIP_CHANNEL_ID}> pour rechercher des adversaires._`);
+        }
 
         await interaction.editReply({ content: "The message has been sent" });
     }
@@ -129,45 +126,43 @@ const sc_MatchmakingChampionshipCommand = new SubSlashCommandOption(
             throw new InvalidActionException("La commande doit être exécutée dans un salon textuel");
         }
 
-        const matchmakingButton: InteractionButtonComponentData = {
-            type: ComponentType.Button,
-            style: ButtonStyle.Primary,
-            label: "Chercher un adversaire",
-            customId: "dummy-1",
-            emoji: EMOJI_MATCHMAKING
-        };
-        const action = new SearchOpponentChampionshipAction({ });
-        client.actions.linkComponentToAction(matchmakingButton, action);
+        const components: APIMessageActionRowComponent[] = [
+            {
+                type: ComponentType.Button,
+                style: ButtonStyle.Link,
+                label: "Règlement + FAQ",
+                url: `https://discord.com/channels/${channel.guildId}/${FAQ_CHANNEL_ID}`,
+                emoji: EMOJI_FAQ
+            }
+        ];
+        if (!DISABLE_MATCHMAKING) {
+            const matchmakingButton: APIMessageActionRowComponent = {
+                type: ComponentType.Button,
+                style: ButtonStyle.Primary,
+                label: "Chercher un adversaire",
+                custom_id: "dummy-1",
+                emoji: EMOJI_MATCHMAKING
+            };
+            const action = new SearchOpponentChampionshipAction({ });
+            client.actions.linkComponentToAction(matchmakingButton, action);
+
+            components.unshift(matchmakingButton);
+        }
 
         await channel.send({
             content: "# LANCER UN MATCH 🏆 \n" +
-                `Faîtes un maximum de matchs contre les autres participants ! **Vous remporterez davantage de points 📈  ET de cashprize ${EMOJI_DOLLAR} **\n` +
+                `${EMOJI_INFORMATION} Retrouvez dans ce canal les fils de discussions de chacun de vos matchs !\n` +
                 "\n" +
-                "## Clique sur le bouton \"Je Cherche Un Adversaire\"\n" +
-                "_Le bot cherche un adversaire sur la même plateforme que toi_\n" +
-                "**Si aucun adversaire n'est trouvé, le bot te mettra dans la file d'attente ⏳**\n" +
+                "## 🆘 Si besoin, clique sur le bouton \"J'ai besoin d'aide\" \n" +
+                `_Le bot mentionne les organisateurs, et ils te répondront dans ton fil de joueur (sous le canal <#${SUPPORT_CHANNEL_ID}> )_\n` +
+                "**Soyez patient, les organisateurs sont des bénévoles et ne sont pas à disposition 24h/24 ⏳**\n" +
                 "\n" +
-                "## Une fois qu'un adversaire est trouvé, vous êtes ajoutés ensemble dans un fil de discussion.\n" +
+                "## Une fois qu'un match est lancé, vous êtes ajoutés ensemble dans un fil de discussion.\n" +
                 "1. Sélectionnez vos armes 🔫 \n" +
                 "2. Planifiez votre match 📆 \n" +
                 `3. Validez votre enregistrement ${EMOJI_VALIDATED}` +
-                "\n" +
-                `Maintenant, n'attendez plus et lancez un match via "${EMOJI_MATCHMAKING} Chercher un adversaire"`,
-            components: [
-                {
-                    type: ComponentType.ActionRow,
-                    components: [
-                        matchmakingButton,
-                        {
-                            type: ComponentType.Button,
-                            style: ButtonStyle.Link,
-                            label: "Règlement + FAQ",
-                            url: `https://discord.com/channels/${channel.guildId}/${FAQ_CHANNEL_ID}`,
-                            emoji: EMOJI_FAQ
-                        }
-                    ]
-                }
-            ],
+                "Maintenant, n'attendez plus et rejoignez l'arène ! ⚔️",
+            components: [{ type: ComponentType.ActionRow, components }],
             files: [
                 path.join(__dirname, "..", "..", "assets", "freemode_arena_VS.png")
             ]
@@ -194,7 +189,7 @@ export = new SlashCommand(
     name, nameLocalized,
     description, descriptionLocalized,
     {
-        [sc_RegisterChampionship]: sc_RegisterChampionshipCommand,
+        [sc_HomeChampionshipMessage]: sc_HomeChampionshipMessageCommand,
         [sc_MatchmakingChampionship]: sc_MatchmakingChampionshipCommand
     },
     undefined,

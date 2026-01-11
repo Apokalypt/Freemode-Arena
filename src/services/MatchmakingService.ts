@@ -22,7 +22,8 @@ export class MatchmakingService {
 
         const ticket: MatchmakingTicketDocument | null = await MatchmakingTicketModel.findOneAndUpdate(
             {
-                platform: participant.platform,
+                // FIXME : if enable back matchmaking for multiple platforms, this line must be updated
+                platform: participant.platforms[0],
                 participant: { $nin: playersIdToAvoid },
                 status: MATCHMAKING_TICKET_STATUS.WAITING
             },
@@ -65,7 +66,8 @@ export class MatchmakingService {
 
     public async createTicket(player: Participant): Promise<MatchmakingTicketDocument | null> {
         return MatchmakingTicketModel.create({
-            platform: player.platform,
+            // FIXME : if enable back matchmaking for multiple platforms, this line must be updated
+            platform: player.platforms[0],
             participant: player._id,
             status: MATCHMAKING_TICKET_STATUS.WAITING
         });
@@ -74,7 +76,7 @@ export class MatchmakingService {
     public async getUserPlatforms(guild: Guild, playerId: string): Promise<Platforms[]> {
         const member = await guild.members.fetch(playerId);
 
-        return PLATFORMS_ROLES.filter( conf => member.roles.cache.has(conf.role) )
+        return PLATFORMS_ROLES.filter( conf => conf.roles.some( role => member.roles.cache.has(role) ) )
             .map( conf => conf.platform );
     }
 

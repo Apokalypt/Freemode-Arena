@@ -3,26 +3,55 @@ let SUPPORT_CHANNEL_ID: string;
 let CHAMPIONSHIP_ROLE_ID: string;
 let CHAMPIONSHIP_CHANNEL_ID: string;
 let FAQ_CHANNEL_ID: string;
+let DISCUSSION_CHANNEL_ID: string;
 
-let PLAYSTATION_ROLE_ID: string;
-let XBOX_ROLE_ID: string;
-let PC_ROLE_ID: string;
+let PLAYSTATION_OG_ROLES_ID: string[];
+let PLAYSTATION_NG_ROLE_ID: string;
+let XBOX_OG_ROLES_ID: string[];
+let XBOX_NG_ROLE_ID: string;
+let PC_OG_ROLE_ID: string;
+let PC_NG_ROLE_ID: string;
 
-const BASE_TOKENS_COUNT = 10;
-const ENABLE_ADVANCED_MAP_RANDOMIZER = false; // Set to true when the season is on multiple maps
+const BASE_TOKENS_COUNT = 3;
+const TOKENS_GROUP_METHOD: "global" | "category" = "global";
+
+const ENABLE_ADVANCED_MAP_RANDOMIZER = true; // Set to true when the season is on multiple maps
+
+/**
+ * If true, disables the matchmaking system entirely which requires manual setup, from admins, of matches.
+ *
+ * FIXME -> some features related to matchmaking doesn't support latest changes for multiple platforms per user. If
+ *  you re-enable matchmaking, make sure to check those features marked by a FIX comment.
+ */
+const DISABLE_MATCHMAKING = true;
+/**
+ * If true, disables the ability for discord members to register itself for the championship which requires
+ * manual registration by admins.
+ */
+const DISABLE_NEW_REGISTRATION = true;
+/**
+ * If true, enable the mechanism to apply an advantage/disadvantage to players depending on their level.
+ * For example, a beginner player may start a match with more tokens than a pro player.
+ */
+const ENABLE_LEVEL_BASED_ADVANTAGE = false;
 
 if (process.env.NODE_ENV === "development") {
-    SUPPORT_ROLE_ID = "935532722074570755";
-    SUPPORT_CHANNEL_ID = "1180815808268615751";
+    SUPPORT_ROLE_ID = "1418227444032213103";
+    SUPPORT_CHANNEL_ID = "1447295203487514677";
 
-    CHAMPIONSHIP_ROLE_ID = "935532722053607480";
-    CHAMPIONSHIP_CHANNEL_ID = "1180815841147752499";
+    CHAMPIONSHIP_ROLE_ID = "1418227406711291924";
+    CHAMPIONSHIP_CHANNEL_ID = "1447295205190406351";
 
-    FAQ_CHANNEL_ID = "1180815808268615751";
+    FAQ_CHANNEL_ID = "1447295206507679785";
 
-    PLAYSTATION_ROLE_ID = "935532722020032516";
-    XBOX_ROLE_ID = "935532722020032517";
-    PC_ROLE_ID = "935532722020032518";
+    DISCUSSION_CHANNEL_ID = "1447295207996395571";
+
+    PLAYSTATION_OG_ROLES_ID = ["1418227448851726519", "1418227445336641608"];
+    PLAYSTATION_NG_ROLE_ID = "1418227465683210340";
+    XBOX_OG_ROLES_ID = ["1418227423450763346", "1418227455168348252"];
+    XBOX_NG_ROLE_ID = "1418227455168348252";
+    PC_OG_ROLE_ID = "1418227463682523166";
+    PC_NG_ROLE_ID = "1418227460587393085";
 } else {
     SUPPORT_ROLE_ID = "1270001386528178238";
     SUPPORT_CHANNEL_ID = "1041399831316414536";
@@ -32,11 +61,17 @@ if (process.env.NODE_ENV === "development") {
 
     FAQ_CHANNEL_ID = "1041400080818770000";
 
-    PLAYSTATION_ROLE_ID = "960659963670315048";
-    XBOX_ROLE_ID = "960660087754588190";
-    PC_ROLE_ID = "684002470808125440";
+    DISCUSSION_CHANNEL_ID = "1443228099818033205";
+
+    PLAYSTATION_OG_ROLES_ID = ["684002381935017991", "960659909651886080"];
+    PLAYSTATION_NG_ROLE_ID = "960659963670315048";
+    XBOX_OG_ROLES_ID = ["684002437521997824", "960660036667994142"];
+    XBOX_NG_ROLE_ID = "960660087754588190";
+    PC_OG_ROLE_ID = "684002470808125440";
+    PC_NG_ROLE_ID = "1345882759062618163";
 }
 
+// DEPRECATED
 const KNOWN_USERS_LEVEL: Record<string, number> = {
     "214293596092760065": 2,
     "479632136182300682": 2,
@@ -55,9 +90,11 @@ const KNOWN_USERS_LEVEL: Record<string, number> = {
     "485031533489553410": 0,
     "902642604599025726": 0
 };
+// DEPRECATED
 const DEFAULT_USER_LEVEL = 0;
 
-const CHAMPIONSHIP_END_DATE = new Date("2024-08-24T21:30:00.000Z"); // 24 August 2024 at 21:30 UTC (23:30 CEST)
+// DEPRECATED
+const CHAMPIONSHIP_END_DATE = new Date("2026-12-30T00:00:00.000Z"); // TBD
 
 export {
     SUPPORT_ROLE_ID,
@@ -68,14 +105,23 @@ export {
     CHAMPIONSHIP_END_DATE,
 
     FAQ_CHANNEL_ID,
+    DISCUSSION_CHANNEL_ID,
 
     KNOWN_USERS_LEVEL,
     DEFAULT_USER_LEVEL,
 
-    PLAYSTATION_ROLE_ID,
-    XBOX_ROLE_ID,
-    PC_ROLE_ID,
+    PLAYSTATION_OG_ROLES_ID,
+    PLAYSTATION_NG_ROLE_ID,
+    XBOX_OG_ROLES_ID,
+    XBOX_NG_ROLE_ID,
+    PC_OG_ROLE_ID,
+    PC_NG_ROLE_ID,
 
     BASE_TOKENS_COUNT,
-    ENABLE_ADVANCED_MAP_RANDOMIZER
+    TOKENS_GROUP_METHOD,
+    ENABLE_ADVANCED_MAP_RANDOMIZER,
+
+    DISABLE_MATCHMAKING,
+    DISABLE_NEW_REGISTRATION,
+    ENABLE_LEVEL_BASED_ADVANTAGE
 }

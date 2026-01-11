@@ -1,14 +1,13 @@
-import type { APIButtonComponentWithCustomId, APIStringSelectComponent } from "discord.js";
+import type { InteractionReplyOptions } from "discord.js";
 import type { BotClient } from "@models/BotClient";
 import type { WithoutModifiers, InteractionForAction } from "@bot-types";
 import { getDiscriminatorModelForClass, Prop } from "@typegoose/typegoose";
-import { ButtonStyle, ComponentType } from "discord.js";
 import { MatchService } from "@services/MatchService";
 import { ParticipantModel } from "@models/championship/Participant";
 import { PropertyInjectableFromInteraction } from "@models/action/ActionPropertySerialization";
-import { UpdateWeaponsSelectionAction } from "./UpdateWeaponsSelectionAction";
-import { ShowWeaponCategorySelectionAction } from "./ShowWeaponCategorySelectionAction";
 import { Action, ActionExecutionContext, ActionModel, InputAction, InputActionValidated } from "@models/action/Action";
+import { UnknownException } from "@exceptions/UnknownException";
+import { NotSupportedException } from "@exceptions/NotSupportedException";
 import { UnknownMatchException } from "@exceptions/championship/UnknownMatchException";
 import { InvalidActionException } from "@exceptions/actions/InvalidActionException";
 import { NotPlayerInMatchException } from "@exceptions/championship/NotPlayerInMatchException";
@@ -31,6 +30,10 @@ export class ShowWeaponsSelectionAction extends Action<"ACTION_SHOW_WEAPONS_SELE
         this.categoryId = data.categoryId;
     }
 
+    protected override _getInput(): InputShowWeaponsSelectionAction {
+        return { ...super._getInput(), categoryId: this.categoryId };
+    }
+
     protected override _getContext(
         client: BotClient,
         input: InputShowWeaponsSelectionAction,
@@ -42,13 +45,13 @@ export class ShowWeaponsSelectionAction extends Action<"ACTION_SHOW_WEAPONS_SELE
     static override PROPERTIES_SERIALIZABLE_INTERACTION_ID() {
         return [
             ...super.PROPERTIES_SERIALIZABLE_INTERACTION_ID(),
-            new PropertyInjectableFromInteraction({ name: "categoryId", onNull: null, onUndefined: null }),
+            new PropertyInjectableFromInteraction({ name: "categoryId", onNull: null, onUndefined: "-" })
         ];
     }
 }
 
 type InputShowWeaponsSelectionAction = InputAction<"ACTION_SHOW_WEAPONS_SELECTION"> & { categoryId?: string };
-type InputShowWeaponsSelectionActionValidated = InputActionValidated<"ACTION_SHOW_WEAPONS_SELECTION"> & { categoryId: string };
+type InputShowWeaponsSelectionActionValidated = InputActionValidated<"ACTION_SHOW_WEAPONS_SELECTION"> & { categoryId?: string };
 
 class ShowWeaponsSelectionActionExecutionContext<IsValidated extends true | false = false>
     extends ActionExecutionContext<IsValidated, InputShowWeaponsSelectionAction, InputShowWeaponsSelectionActionValidated, "ACTION_SHOW_WEAPONS_SELECTION"> {
@@ -64,14 +67,14 @@ class ShowWeaponsSelectionActionExecutionContext<IsValidated extends true | fals
             throw new InvalidActionException("L'action doit être exécutée dans un serveur.");
         }
 
-        if (!this.input.categoryId) {
-            throw new InvalidActionException("Vous devez sélectionner une catégorie d'arme.");
-        }
-
         return { ...inputValidated, guildId: inputValidated.guildId, categoryId: this.input.categoryId };
     }
 
     protected async _execute(this:ShowWeaponsSelectionActionExecutionContext<true>): Promise<void> {
+        if (this._source.isChatInputCommand()) {
+            throw new NotSupportedException();
+        }
+
         if (this._source.message.flags.has("Ephemeral")) {
             // We are navigating through the menu, we don't want to send new messages each time but just update the
             // previous one to offer a better user experience.
@@ -99,53 +102,25 @@ class ShowWeaponsSelectionActionExecutionContext<IsValidated extends true | fals
             throw new InvalidPlayerStateException("Vous avez déjà validé votre sélection d'armes et ne pouvez plus la modifier!");
         }
 
-        const category = MatchService.instance.getWeaponsCategoryFromId(this.input.categoryId);
+        const categories = MatchService.instance.getWeaponsCategories();
+        let hasOnlyOneCategory = categories.length === 1;
+        const categoryIdSelected = this.input.categoryId;
+        let categorySelected: undefined | typeof categories[0] = undefined;
+        if (categoryIdSelected) {
+            categorySelected = categories.find( c => c.id.toString() === categoryIdSelected );
+            if (!categorySelected) {
+                throw new UnknownException();
+            }
+        } else if (hasOnlyOneCategory) {
+            categorySelected = categories[0];
+        }
 
-        const weaponsSelectMenu: APIStringSelectComponent = {
-            type: ComponentType.StringSelect,
-            custom_id: "dummy-weapons-selection",
-            placeholder: "Clique ici pour sélectionner une arme",
-            min_values: 0,
-            max_values: category.weapons.length,
-            options: category.weapons.map( (weapon, index) => ({
-                label: weapon.name,
-                value: index.toString(),
-                default: player.weapons.selection.find( w => w.name === weapon.name ) != null,
-                description: `${weapon.value} pts`
-            }) )
-        };
-        const action = new UpdateWeaponsSelectionAction({ categoryId: this.input.categoryId });
-        this._client.actions.linkComponentToAction(weaponsSelectMenu, action, "weaponIds");
-
-        const backToCategoriesButton: APIButtonComponentWithCustomId = {
-            type: ComponentType.Button,
-            style: ButtonStyle.Primary,
-            custom_id: "dummy-back-to-categories",
-            label: "Retour aux catégories",
-            emoji: { name: "🔙" }
-        };
-        const actionToBackToCategories = new ShowWeaponCategorySelectionAction({ });
-        this._client.actions.linkComponentToAction(backToCategoriesButton, actionToBackToCategories);
-
-        const data = MatchService.instance.buildPlayerMenu(
-            player,
-            `Menu - Sélection d'armes "${category.name}"`,
-            "Clique ci-dessous pour sélectionner les armes à ajouter/retirer",
-            [
-                {
-                    type: ComponentType.ActionRow,
-                    components: [
-                        weaponsSelectMenu
-                    ]
-                },
-                {
-                    type: ComponentType.ActionRow,
-                    components: [
-                        backToCategoriesButton
-                    ]
-                }
-            ]
-        );
+        let data: InteractionReplyOptions;
+        if (categorySelected) {
+            data = MatchService.instance.buildPlayerWeaponSelectionMenu(this._client, player, categorySelected);
+        } else {
+            data = MatchService.instance.buildPlayerCategorySelectionMenu(this._client, player);
+        }
         await this._source.editReply(data);
     }
 }

@@ -1,115 +1,83 @@
 [
     {
         "id": 1,
-        "name": "Armes de poing",
+        "name": "",
         "weapons": [
             {
-                "name": "Pistolet",
+                "name": "Arme principale - Mitrailleuse de combat",
                 "value": 1
             },
             {
-                "name": "Revolver lourd",
+                "name": "Arme principale - Dezingator infernal",
                 "value": 1
             },
             {
-                "name": "Pistolet perforant",
-                "value": 2
-            }
-        ]
-    },
-    {
-        "id": 2,
-        "name": "Mitraillettes",
-        "weapons": [
-            {
-                "name": "ADP de combat",
-                "value": 2
-            },
-            {
-                "name": "Mitraillette",
-                "value": 3
-            },
-            {
-                "name": "Mitrailleuse de combat",
-                "value": 6
-            }
-        ]
-    },
-    {
-        "id": 3,
-        "name": "Fusils d'assaut",
-        "weapons": [
-            {
-                "name": "Fusil d'assaut AK",
-                "value": 4
-            },
-            {
-                "name": "Fusil Bullpup",
-                "value": 4
-            },
-            {
-                "name": "Carabine spéciale",
-                "value": 5
-            }
-        ]
-    },
-    {
-        "id": 4,
-        "name": "Fusils à pompe",
-        "weapons": [
-            {
-                "name": "Fusil à pompe",
-                "value": 4
-            },
-            {
-                "name": "Fusil à pompe lourd",
-                "value": 8
-            }
-        ]
-    },
-    {
-        "id": 5,
-        "name": "Fusils de précision",
-        "weapons": [
-            {
-                "name": "Sniper standard",
+                "name": "Arme principale - Fusil d'assaut AK",
                 "value": 1
             },
             {
-                "name": "Sniper lourd",
-                "value": 4
+                "name": "Arme principale - Fusil Bullpup",
+                "value": 1
             },
             {
-                "name": "Fusil à lunette",
-                "value": 6
-            }
-        ]
-    },
-    {
-        "id": 6,
-        "name": "Armes lourde",
-        "weapons": [
-            {
-                "name": "Lance-grenades compact",
-                "value": 6
+                "name": "Arme principale - Carabine spéciale",
+                "value": 1
             },
             {
-                "name": "Lance-grenades",
-                "value": 8
-            }
-        ]
-    },
-    {
-        "id": 7,
-        "name": "Projectiles",
-        "weapons": [
-            {
-                "name": "Grenades",
-                "value": 3
+                "name": "Arme principale - Fusil à pompe",
+                "value": 1
             },
             {
-                "name": "Mines de proximité",
-                "value": 4
+                "name": "Arme principale - Fusil à pompe lourd",
+                "value": 1
+            },
+            {
+                "name": "Arme principale - Sniper lourd",
+                "value": 1
+            },
+            {
+                "name": "Arme principale - Fusil à lunette",
+                "value": 1
+            },
+            {
+                "name": "Arme principale - Lance-grenades",
+                "value": 1
+            },
+            {
+                "name": "Arme de poing - Pistolet",
+                "value": 1
+            },
+            {
+                "name": "Arme de poing - Pistolet perforant",
+                "value": 1
+            },
+            {
+                "name": "Arme de poing - Revolver lourd",
+                "value": 1
+            },
+            {
+                "name": "Arme de poing - Up-n-Atomizer",
+                "value": 1
+            },
+            {
+                "name": "Arme de poing - Pistolet mitrailleur",
+                "value": 1
+            },
+            {
+                "name": "Arme de poing - Lance-grenades compact",
+                "value": 1
+            },
+            {
+                "name": "Projectile - Bombes collantes",
+                "value": 1
+            },
+            {
+                "name": "Projectile - Grenades",
+                "value": 1
+            },
+            {
+                "name": "Projectile - Mines de proximité",
+                "value": 1
             }
         ]
     }

@@ -1,6 +1,47 @@
 [
-    {
-        "name": "Island",
-        "filename": "map_island.png"
-    }
+  {
+    "name": "Elysian Island",
+    "filename": "Elysian_Island.png",
+    "activity": "https://socialclub.rockstargames.com/job/gtav/kfUMfmObMUyy6yUL6a1-tw"
+  },
+  {
+    "name": "Grove Street",
+    "filename": "Grove_Street.png",
+    "activity": "https://socialclub.rockstargames.com/job/gtav/oa2oA2NWb0y-wttDNVRqCA"
+  },
+  {
+    "name": "Millars Boat Shop",
+    "filename": "Millars_Boat_Shop.png",
+    "activity": "https://socialclub.rockstargames.com/job/gtav/5plRvbDeUUeX3INfQrCTvA"
+  },
+  {
+    "name": "Mirror Park",
+    "filename": "Mirror_Park.png",
+    "activity": "https://socialclub.rockstargames.com/job/gtav/sjSTH2XMPEqVSspR-SOq0A"
+  },
+  {
+    "name": "Paleto Bay",
+    "filename": "Paleto_Bay.png",
+    "activity": "https://socialclub.rockstargames.com/job/gtav/040BfFONKkqMXTPVQ_7_yQ"
+  },
+  {
+    "name": "Paleto Forest",
+    "filename": "Paleto_Forest.png",
+    "activity": "https://socialclub.rockstargames.com/job/gtav/q5TGe7av40if4FZgHCI1iA"
+  },
+  {
+    "name": "Pillbox Hill",
+    "filename": "Pillbox_Hill.png",
+    "activity": "https://socialclub.rockstargames.com/job/gtav/jbBkZmcZsk28Kd6CKNcpng"
+  },
+  {
+    "name": "Railyard",
+    "filename": "Railyard.png",
+    "activity": "https://socialclub.rockstargames.com/job/gtav/rVqoGeF_o0aMZQeXHTUzLA"
+  },
+  {
+    "name": "Trailer Park",
+    "filename": "Trailer_Park.png",
+    "activity": "https://socialclub.rockstargames.com/job/gtav/UUnjFNrY4E6419_yVzAUsA"
+  }
 ]

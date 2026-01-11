@@ -1,11 +1,6 @@
-import type {
-    APIButtonComponentWithCustomId,
-    APIStringSelectComponent,
-} from "discord.js";
 import type { BotClient } from "@models/BotClient";
 import type { WithoutModifiers, InteractionForAction } from "@bot-types";
 import { getDiscriminatorModelForClass, Prop, PropType } from "@typegoose/typegoose";
-import { ButtonStyle, ComponentType } from "discord.js";
 import { Action, ActionExecutionContext, ActionModel, InputAction, InputActionValidated } from "@models/action/Action";
 import { IntermediateModel, RequiredProp } from "@decorators/database";
 import { InvalidActionException } from "@exceptions/actions/InvalidActionException";
@@ -16,7 +11,7 @@ import {
     PropertyInjectableFromInteraction,
     PropertyNotInjectableFromInteraction
 } from "@models/action/ActionPropertySerialization";
-import { ShowWeaponCategorySelectionAction } from "./ShowWeaponCategorySelectionAction";
+import { NotSupportedException } from "@exceptions/NotSupportedException";
 import { UnknownMatchException } from "@exceptions/championship/UnknownMatchException";
 import { NotPlayerInMatchException } from "@exceptions/championship/NotPlayerInMatchException";
 import { UserNotRegisteredException } from "@exceptions/championship/UserNotRegisteredException";
@@ -114,6 +109,10 @@ class UpdateWeaponsSelectionActionExecutionContext<IsValidated extends true | fa
     }
 
     protected async _execute(this:UpdateWeaponsSelectionActionExecutionContext<true>): Promise<void> {
+        if (this._source.isChatInputCommand()) {
+            throw new NotSupportedException();
+        }
+
         if (this._source.message.flags.has("Ephemeral")) {
             // We are navigating through the menu, we don't want to send new messages each time but just update the
             // previous one to offer a better user experience.
@@ -144,52 +143,9 @@ class UpdateWeaponsSelectionActionExecutionContext<IsValidated extends true | fa
         const category = MatchService.instance.updatePlayerSelectionOnCategory(this.input.categoryId, this.input.weaponIds, player);
         await match.save();
 
-        const weaponsSelectMenu: APIStringSelectComponent = {
-            type: ComponentType.StringSelect,
-            custom_id: "dummy-weapons-selection",
-            placeholder: "Clique ici pour sélectionner une arme",
-            min_values: 0,
-            max_values: category.weapons.length,
-            options: category.weapons.map( (weapon, index) => ({
-                label: weapon.name,
-                value: index.toString(),
-                default: player.weapons.selection.find( w => w.name === weapon.name ) != null,
-                description: `${weapon.value} pts`
-            }) )
-        };
-        const action = new UpdateWeaponsSelectionAction({ categoryId: this.input.categoryId });
-        this._client.actions.linkComponentToAction(weaponsSelectMenu, action, "weaponIds");
-
-        const backToCategoriesButton: APIButtonComponentWithCustomId = {
-            type: ComponentType.Button,
-            style: ButtonStyle.Primary,
-            custom_id: "dummy-back-to-categories",
-            label: "Retour aux catégories",
-            emoji: { name: "🔙" }
-        };
-        const actionToBackToCategories = new ShowWeaponCategorySelectionAction({ });
-        this._client.actions.linkComponentToAction(backToCategoriesButton, actionToBackToCategories);
-
-        const data = MatchService.instance.buildPlayerMenu(
-            player,
-            `Menu - Sélection d'armes "${category.name}"`,
-            "Clique ci-dessous pour sélectionner les armes à ajouter/retirer",
-            [
-                {
-                    type: ComponentType.ActionRow,
-                    components: [
-                        weaponsSelectMenu
-                    ]
-                },
-                {
-                    type: ComponentType.ActionRow,
-                    components: [
-                        backToCategoriesButton
-                    ]
-                }
-            ]
+        await this._source.editReply(
+            MatchService.instance.buildPlayerWeaponSelectionMenu(this._client, player, category)
         );
-        await this._source.editReply(data);
     }
 }
 

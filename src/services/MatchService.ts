@@ -448,7 +448,7 @@ export class MatchService {
 
         const message = await thread.send({
             content: `${titleMatch}\n` +
-                `${EMOJI_INFORMATION} Ce fil de discussion a été créé pour que vous puissiez organiser votre match. Les organisateurs () sont aussi présent en cas de besoin.\n` +
+                `${EMOJI_INFORMATION} Ce fil de discussion a été créé pour que vous puissiez organiser votre match. Les organisateurs () sont aussi présents en cas de besoin.\n` +
                 "\n" +
                 "## Joueurs ⚔️ \n" +
                 `- ${this._formatMatchPlayerMention(firstParticipant, secondParticipant)}\n` +

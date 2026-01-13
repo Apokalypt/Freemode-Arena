@@ -2,7 +2,7 @@ import { Prop, PropType } from "@typegoose/typegoose";
 import { InGameWeapon } from "@models/championship/InGameWeapon";
 import { MatchService } from "@services/MatchService";
 import { EmbeddedModel, RequiredProp } from "@decorators/database";
-import { BASE_TOKENS_COUNT, TOKENS_GROUP_METHOD } from "@constants";
+import { BASE_TOKENS_COUNT, EMOJI_GREEN_CHECK, TOKENS_GROUP_METHOD } from "@constants";
 
 @EmbeddedModel()
 export class MatchPlayerWeapons {
@@ -43,7 +43,7 @@ export class MatchPlayerWeapons {
         if (this.validatedAt == null) {
             return ":hourglass: - Non Validée";
         } else {
-            return "<a:green_check_circle:1182354698804666378> - Validée";
+            return `${EMOJI_GREEN_CHECK} - Validée`;
         }
     }
     public stringifySelection() {

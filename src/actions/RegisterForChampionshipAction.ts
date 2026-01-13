@@ -14,7 +14,7 @@ import { RegistrationRefusedException } from "@exceptions/championship/Registrat
 import { ACTION_CODES, DATABASE_MODELS, Platforms } from "@enums";
 import {
     CHAMPIONSHIP_CHANNEL_ID, CHAMPIONSHIP_END_DATE,
-    CHAMPIONSHIP_ROLE_ID, EMOJI_FAQ, EMOJI_MATCHMAKING, EMOJI_RIGHT_ARROW, EMOJI_SUPPORT,
+    CHAMPIONSHIP_ROLE_ID, EMOJI_FAQ, EMOJI_GREEN_CHECK, EMOJI_MATCHMAKING, EMOJI_RIGHT_ARROW, EMOJI_SUPPORT,
     FAQ_CHANNEL_ID,
     SUPPORT_CHANNEL_ID,
     SUPPORT_ROLE_ID
@@ -125,7 +125,7 @@ class RegisterForChampionshipActionExecutionContext<IsValidated extends true | f
             thread.send({
                 content: `# Bonne chance ${user}\n` +
                     "** **\n" +
-                    "<a:green_check_circle:1182354698804666378> Vous êtes maintenant inscrit à ``Freemode Arena - Saison 5``\n" +
+                    `${EMOJI_GREEN_CHECK} Vous êtes maintenant inscrit à \`\`Freemode Arena - Saison 5\`\`\n`+
                     "\n" +
                     `Ce salon vous permettra de communiquer avec les gérants du championnat ( <@&${SUPPORT_ROLE_ID}> ) dans le cas où vous auriez des questions ou des problèmes.\n` +
                     "\n" +
